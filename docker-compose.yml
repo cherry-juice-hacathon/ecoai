@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  footprint-api:
+    build:
+      context: ./api
+    image: co2-footprint-api:latest
+    container_name: footprint-api
+    environment:
+      FLASK_ENV: production
+    ports:
+      - "5000:5000"
+
+  trends-api:
+    build:
+      context: ./api-future-trends-for-company
+    image: co2-trends-api:latest
+    container_name: trends-api
+    environment:
+      FLASK_ENV: production
+    ports:
+      - "5001:5000"
+
+  ui:
+    build:
+      context: ./ui
+    image: co2-ui:latest
+    container_name: co2-ui
+    depends_on:
+      - footprint-api
+      - trends-api
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_FOOTPRINT_API_URL: http://footprint-api:5000
+      NEXT_PUBLIC_TRENDS_API_URL: http://trends-api:5000
+      OPENAI_API_KEY: ${OPENAI_API_KEY:?set OPENAI_API_KEY in your environment}
+    ports:
+      - "6767:3000"

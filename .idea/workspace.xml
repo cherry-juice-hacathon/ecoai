@@ -5,15 +5,27 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="74e408c7-1b40-4028-b7c5-ef3179086a3b" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/api-future-trends-for-company/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/api-future-trends-for-company/app.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/app/analysis/YearDataForm.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/app/analysis/YearSelector.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/app/analysis/YearTrendsChart.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/functions/trendsApi.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-future-trends-for-company/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-future-trends-for-company/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-future-trends-for-company/requirements.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/app/analysis/CsvUploader.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/app/analysis/EcoAdvisorPanel.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/app/analysis/types.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/app/api/eco-advisor/route.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/app/logo/page.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/functions/co2Api.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/api/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/footprint.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/footprint.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/app/analysis/CountrySelect.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/ui/app/analysis/CountrySelect.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/app/analysis/YearDataForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/ui/app/analysis/YearDataForm.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/app/analysis/YearSelector.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/ui/app/analysis/YearSelector.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/app/analysis/YearTrendsChart.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/ui/app/analysis/YearTrendsChart.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/app/analysis/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/ui/app/analysis/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/functions/trendsApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/functions/trendsApi.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/package.json" afterDir="false" />
     </list>
@@ -53,38 +65,60 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;js.debugger.nextJs.config.created.client&quot;: &quot;true&quot;,
-    &quot;js.debugger.nextJs.config.created.server&quot;: &quot;true&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/projects/co2misson&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;npm.Next.js: server-side.executor&quot;: &quot;Run&quot;,
-    &quot;npm.dev.executor&quot;: &quot;Run&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;C:\\Program Files\\JetBrains\\WebStorm 2025.2.5\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Docker.api/Dockerfile (1).executor": "Run",
+    "Docker.api/Dockerfile.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "master",
+    "js.debugger.nextJs.config.created.client": "true",
+    "js.debugger.nextJs.config.created.server": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "C:/projects/co2misson",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "npm.Next.js: server-side.executor": "Run",
+    "npm.dev.executor": "Run",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "to.speed.mode.migration.done": "true",
+    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\WebStorm 2025.2.5\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\projects\co2misson\ui" />
     </key>
   </component>
-  <component name="RunManager" selected="npm.dev">
+  <component name="RunManager" selected="Docker.api/Dockerfile">
     <configuration name="Next.js: debug client-side" type="JavascriptDebugType" uri="http://localhost:3000/">
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="docker-deploy" factoryName="dockerfile" temporary="true">
+      <deployment type="dockerfile" />
+      <method v="2" />
+    </configuration>
+    <configuration name="api/Dockerfile (1)" type="docker-deploy" factoryName="dockerfile" temporary="true" server-name="Docker">
+      <deployment type="dockerfile">
+        <settings>
+          <option name="sourceFilePath" value="api/Dockerfile" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <configuration name="api/Dockerfile" type="docker-deploy" factoryName="dockerfile" temporary="true" server-name="server">
+      <deployment type="dockerfile">
+        <settings>
+          <option name="sourceFilePath" value="api/Dockerfile" />
+        </settings>
+      </deployment>
       <method v="2" />
     </configuration>
     <configuration name="Next.js: server-side" type="js.build_tools.npm">
@@ -109,6 +143,8 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Docker.api/Dockerfile" />
+        <item itemvalue="Docker.api/Dockerfile (1)" />
         <item itemvalue="npm.dev" />
       </list>
     </recent_temporary>
@@ -129,7 +165,7 @@
       <updated>1764434381947</updated>
       <workItem from="1764434383499" duration="9825000" />
       <workItem from="1764449419833" duration="9931000" />
-      <workItem from="1764460150956" duration="3592000" />
+      <workItem from="1764460150956" duration="24811000" />
     </task>
     <servers />
   </component>

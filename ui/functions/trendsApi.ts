@@ -1,3 +1,4 @@
+'use server';
 import type { RequestInit } from 'next/dist/server/web/spec-extension/request';
 
 const BASE_URL = process.env.NEXT_PUBLIC_TRENDS_API_BASE?.replace(/\/$/, '') || 'http://localhost:5000';
@@ -55,6 +56,7 @@ export async function fetchTrendsForecast(payload: TrendsRequest): Promise<Trend
   if (!payload.years?.length || !payload.values?.length) {
     throw new Error('years and values arrays are required');
   }
+  console.log(payload)
 
   return request<TrendsResponse>('/predict', {
     method: 'POST',

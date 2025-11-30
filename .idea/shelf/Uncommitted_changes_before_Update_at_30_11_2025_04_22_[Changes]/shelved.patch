@@ -1,0 +1,1369 @@
+Index: ui/app/analysis/YearDataForm.tsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>'use client';\r\n\r\nimport React, { useEffect } from 'react';\r\nimport { FormikErrors, FormikTouched, useFormikContext } from 'formik';\r\nimport { Zap, Laptop, Monitor, Server, Cloud, Car, Plane } from 'lucide-react';\r\n\r\ninterface YearData {\r\n  annualKwh: number | '';\r\n  laptops: number | '';\r\n  monitors: number | '';\r\n  servers: number | '';\r\n  cloudCo2: number | '';\r\n  fuelPetrol: number | '';\r\n  fuelDiesel: number | '';\r\n  fuelLpg: number | '';\r\n  flightMiles: number | '';\r\n}\r\n\r\ninterface FormValues {\r\n  yearlyData: Record<string, YearData>;\r\n}\r\n\r\nconst createEmptyYearData = (): YearData => ({\r\n  annualKwh: 0,\r\n  laptops: 0,\r\n  monitors: 0,\r\n  servers: 0,\r\n  cloudCo2: 0,\r\n  fuelPetrol: 0,\r\n  fuelDiesel: 0,\r\n  fuelLpg: 0,\r\n  flightMiles: 0,\r\n});\r\n\r\ntype YearField = keyof YearData;\r\n\r\nconst YearDataForm: React.FC<{ year: number }> = ({ year }) => {\r\n  const { values, setFieldValue, errors, touched, setFieldTouched } = useFormikContext<FormValues>();\r\n\r\n  const key = String(year);\r\n  const entry: YearData = values.yearlyData?.[key] ?? createEmptyYearData();\r\n\r\n  useEffect(() => {\r\n    if (!values.yearlyData?.[key]) {\r\n      setFieldValue(\"yearlyData\", {\r\n        ...(values.yearlyData || {}),\r\n        [key]: createEmptyYearData(),\r\n      });\r\n    }\r\n    // eslint-disable-next-line react-hooks/exhaustive-deps\r\n  }, []);\r\n\r\n  const setNumeric = (field: YearField, value: string | number) => {\r\n    const parsed =\r\n      value === \"\"\r\n        ? \"\"\r\n        : typeof value === \"number\"\r\n        ? value\r\n        : Number(value);\r\n\r\n    const safeValue = typeof parsed === \"number\" && Number.isNaN(parsed) ? \"\" : parsed;\r\n\r\n    setFieldValue(\"yearlyData\", {\r\n      ...(values.yearlyData || {}),\r\n      [key]: {\r\n        ...(values.yearlyData?.[key] || {}),\r\n        [field]: safeValue,\r\n      },\r\n    });\r\n\r\n    setFieldTouched?.(`yearlyData.${key}.${field}`, true, false);\r\n  };\r\n\r\n  const adjustBy = (field: YearField, delta: number) => {\r\n    const current = values.yearlyData?.[key]?.[field];\r\n    const base = current === \"\" || current === undefined ? 0 : Number(current);\r\n    setNumeric(field, Math.max(0, base + delta));\r\n  };\r\n\r\n  const inc = (field: YearField, step = 1) => adjustBy(field, step);\r\n  const dec = (field: YearField, step = 1) => adjustBy(field, -step);\r\n\r\n  const valueOrZero = (val: number | '') => (typeof val === 'number' ? val : 0);\r\n  const totalDevices = valueOrZero(entry.laptops) + valueOrZero(entry.monitors) + valueOrZero(entry.servers);\r\n  const cloudImpact = valueOrZero(entry.cloudCo2);\r\n  const flightTotal = valueOrZero(entry.flightMiles);\r\n\r\n  const yearErrors = errors?.yearlyData?.[key] as FormikErrors<YearData> | undefined;\r\n  const yearTouched = touched?.yearlyData?.[key] as FormikTouched<YearData> | undefined;\r\n\r\n  const getFieldError = (field: YearField): string | undefined => {\r\n    if (!yearTouched?.[field]) return undefined;\r\n    const errVal = yearErrors?.[field];\r\n    return typeof errVal === 'string' ? errVal : undefined;\r\n  };\r\n\r\n  const hasError = (field: YearField) => Boolean(getFieldError(field));\r\n\r\n  const smallBtn = 'shrink-0 w-10 h-10 rounded-md flex items-center justify-center text-sm transition-transform transform-gpu hover:scale-105';\r\n  const actionBtn = `${smallBtn} bg-emerald-500 text-slate-900 font-semibold`;\r\n  const decBtn = `${smallBtn} bg-slate-700 text-slate-100`;\r\n  const inputBase = 'flex-1 py-3 min-w-0 h-10 px-3 rounded-md bg-slate-900 text-white border focus:ring-2 text-right';\r\n  const inputClass = `${inputBase} border-slate-700`;\r\n  const fuelInputClass = `${inputBase} border-slate-700 focus:ring-sky-400 w-full text-base font-semibold`;\r\n\r\n  return (\r\n    <div className=\"relative overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 shadow-[0_25px_100px_rgba(8,15,40,0.65)]\">\r\n      <div className=\"absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent)] pointer-events-none\" />\r\n      <div className=\"absolute -bottom-10 -right-10 w-48 h-48 bg-emerald-500/20 blur-[120px] rounded-full pointer-events-none\" />\r\n\r\n      <div className=\"relative flex flex-col gap-6\">\r\n        <div className=\"flex flex-col md:flex-row md:items-center md:justify-between gap-4\">\r\n          <div>\r\n            <p className=\"inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] uppercase tracking-[0.2em] text-slate-300\">Annual purchase log</p>\r\n            <h3 className=\"mt-3 text-2xl font-semibold text-white\">New acquisitions in <span className=\"text-emerald-300\">{year}</span></h3>\r\n            <p className=\"text-sm text-slate-400\">Capture how many assets were purchased and how much extra electricity those additions consumed that year.</p>\r\n          </div>\r\n\r\n          <div className=\"flex flex-wrap gap-3 text-xs\">\r\n            <div className=\"px-4 py-2 rounded-2xl bg-white/5 border border-white/10 text-white/80\">\r\n              Added load: <span className=\"text-white font-semibold\">{valueOrZero(entry.annualKwh).toLocaleString()} kWh</span>\r\n            </div>\r\n            <div className=\"px-4 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-200\">\r\n              Devices purchased: <span className=\"text-emerald-300 font-semibold\">{totalDevices}</span>\r\n            </div>\r\n            <div className=\"px-4 py-2 rounded-2xl bg-sky-500/10 border border-sky-400/30 text-sky-200\">\r\n              Cloud CO₂: <span className=\"text-sky-100 font-semibold\">{cloudImpact.toLocaleString()} kg</span>\r\n            </div>\r\n            <div className=\"px-4 py-2 rounded-2xl bg-indigo-500/10 border border-indigo-400/30 text-indigo-200\">\r\n              Air miles: <span className=\"text-indigo-100 font-semibold\">{flightTotal.toLocaleString()} mi</span>\r\n            </div>\r\n          </div>\r\n        </div>\r\n\r\n        <div className=\"grid grid-cols-1 lg:grid-cols-2 gap-5\">\r\n          {/* Annual kWh */}\r\n          <div className=\"p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-emerald-400/30 transition-all backdrop-blur\">\r\n            <div className=\"flex items-center gap-3 mb-4\">\r\n              <div className=\"p-3 rounded-2xl bg-amber-500/15 text-amber-300 border border-amber-500/20\">\r\n                <Zap size={18} />\r\n              </div>\r\n              <div>\r\n                <p className=\"text-xs text-slate-400\">Electricity impact</p>\r\n                <p className=\"text-sm font-semibold text-white\">Additional load (kWh)</p>\r\n              </div>\r\n            </div>\r\n            <p className=\"text-xs text-slate-400 mb-3\">Extra electricity consumed by the new purchases made in {year}. Enter the total incremental kWh.</p>\r\n            <div className=\"flex flex-col gap-2\">\r\n              <label className=\"text-xs text-slate-400\" htmlFor={`annual-kwh-${year}`}>\r\n                Input the value in kWh (e.g. 12,500,000)\r\n              </label>\r\n              <input\r\n                id={`annual-kwh-${year}`}\r\n                inputMode=\"numeric\"\r\n                pattern=\"[0-9]*\"\r\n                value={entry.annualKwh}\r\n                onChange={(e) => setNumeric('annualKwh', e.target.value)}\r\n                className={`${inputClass} ${hasError('annualKwh') ? 'border-rose-500 focus:ring-rose-400' : 'focus:ring-amber-400'} w-full text-base sm:text-lg font-semibold`}\r\n                aria-label=\"Roczne zużycie kWh\"\r\n                aria-invalid={hasError('annualKwh')}\r\n                placeholder=\"0\"\r\n              />\r\n              {getFieldError('annualKwh') && (\r\n                <p className=\"text-xs text-rose-300 mt-1\">{getFieldError('annualKwh')}</p>\r\n              )}\r\n            </div>\r\n          </div>\r\n\r\n          {/* Laptops */}\r\n          <div className=\"p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-blue-400/30 transition-all backdrop-blur\">\r\n            <div className=\"flex items-center gap-3 mb-4\">\r\n              <div className=\"p-3 rounded-2xl bg-blue-500/15 text-blue-300 border border-blue-500/20\">\r\n                <Laptop size={18} />\r\n              </div>\r\n              <div>\r\n                <p className=\"text-xs text-slate-400\">Mobile fleet</p>\r\n                <p className=\"text-sm font-semibold text-white\">Laptops purchased</p>\r\n              </div>\r\n            </div>\r\n            <p className=\"text-xs text-slate-400 mb-3\">How many laptops were added to the inventory in {year}.</p>\r\n            <div className=\"flex items-center gap-2\">\r\n              <button type=\"button\" onClick={() => dec('laptops')} className={decBtn} aria-label=\"zmniejsz laptopy\">-</button>\r\n              <input\r\n                inputMode=\"numeric\"\r\n                pattern=\"[0-9]*\"\r\n                value={entry.laptops}\r\n                onChange={(e) => setNumeric('laptops', e.target.value)}\r\n                className={`${inputClass} ${hasError('laptops') ? 'border-rose-500 focus:ring-rose-400' : 'focus:ring-blue-400'} max-w-[10rem]`}\r\n                aria-label=\"Laptopy\"\r\n                aria-invalid={hasError('laptops')}\r\n              />\r\n              <button type=\"button\" onClick={() => inc('laptops')} className={actionBtn} aria-label=\"zwiększ laptopy\">+</button>\r\n            </div>\r\n            {getFieldError('laptops') && (\r\n              <p className=\"text-xs text-rose-300 mt-1\">{getFieldError('laptops')}</p>\r\n            )}\r\n          </div>\r\n\r\n          {/* Monitors */}\r\n          <div className=\"p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-indigo-400/30 transition-all backdrop-blur\">\r\n            <div className=\"flex items-center gap-3 mb-4\">\r\n              <div className=\"p-3 rounded-2xl bg-indigo-500/15 text-indigo-300 border border-indigo-500/20\">\r\n                <Monitor size={18} />\r\n              </div>\r\n              <div>\r\n                <p className=\"text-xs text-slate-400\">Workstations</p>\r\n                <p className=\"text-sm font-semibold text-white\">Monitors purchased</p>\r\n              </div>\r\n            </div>\r\n            <p className=\"text-xs text-slate-400 mb-3\">How many monitors were bought during {year}.</p>\r\n            <div className=\"flex items-center gap-2\">\r\n              <button type=\"button\" onClick={() => dec('monitors')} className={decBtn} aria-label=\"zmniejsz monitory\">-</button>\r\n              <input\r\n                inputMode=\"numeric\"\r\n                pattern=\"[0-9]*\"\r\n                value={entry.monitors}\r\n                onChange={(e) => setNumeric('monitors', e.target.value)}\r\n                className={`${inputClass} ${hasError('monitors') ? 'border-rose-500 focus:ring-rose-400' : 'focus:ring-indigo-400'} max-w-[10rem]`}\r\n                aria-label=\"Monitory\"\r\n                aria-invalid={hasError('monitors')}\r\n              />\r\n              <button type=\"button\" onClick={() => inc('monitors')} className={actionBtn} aria-label=\"zwiększ monitory\">+</button>\r\n            </div>\r\n            {getFieldError('monitors') && (\r\n              <p className=\"text-xs text-rose-300 mt-1\">{getFieldError('monitors')}</p>\r\n            )}\r\n          </div>\r\n\r\n          {/* Servers */}\r\n          <div className=\"p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-rose-400/30 transition-all backdrop-blur\">\r\n            <div className=\"flex items-center gap-3 mb-4\">\r\n              <div className=\"p-3 rounded-2xl bg-rose-500/15 text-rose-300 border border-rose-500/20\">\r\n                <Server size={18} />\r\n              </div>\r\n              <div>\r\n                <p className=\"text-xs text-slate-400\">Infrastructure</p>\r\n                <p className=\"text-sm font-semibold text-white\">Servers purchased</p>\r\n              </div>\r\n            </div>\r\n            <p className=\"text-xs text-slate-400 mb-3\">Count the physical or virtual servers acquired in {year}.</p>\r\n            <div className=\"flex items-center gap-2\">\r\n              <button type=\"button\" onClick={() => dec('servers', 1)} className={decBtn} aria-label=\"zmniejsz serwery\">-</button>\r\n              <input\r\n                inputMode=\"numeric\"\r\n                pattern=\"[0-9]*\"\r\n                value={entry.servers}\r\n                onChange={(e) => setNumeric('servers', e.target.value)}\r\n                className={`${inputClass} ${hasError('servers') ? 'border-rose-500 focus:ring-rose-400' : 'focus:ring-rose-400'} max-w-[10rem]`}\r\n                aria-label=\"Serwery\"\r\n                aria-invalid={hasError('servers')}\r\n              />\r\n              <button type=\"button\" onClick={() => inc('servers', 1)} className={actionBtn} aria-label=\"zwiększ serwery\">+</button>\r\n            </div>\r\n            {getFieldError('servers') && (\r\n              <p className=\"text-xs text-rose-300 mt-1\">{getFieldError('servers')}</p>\r\n            )}\r\n          </div>\r\n\r\n          {/* Cloud CO₂ */}\r\n          <div className=\"p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-sky-400/30 transition-all backdrop-blur\">\r\n            <div className=\"flex items-center gap-3 mb-4\">\r\n              <div className=\"p-3 rounded-2xl bg-sky-500/15 text-sky-200 border border-sky-500/20\">\r\n                <Cloud size={18} />\r\n              </div>\r\n              <div>\r\n                <p className=\"text-xs text-slate-400\">Cloud footprint</p>\r\n                <p className=\"text-sm font-semibold text-white\">Cloud CO₂ emissions (kg)</p>\r\n              </div>\r\n            </div>\r\n            <p className=\"text-xs text-slate-400 mb-3\">Use the sustainability dashboard from your cloud operator (AWS, Azure, GCP, etc.) to obtain this year&apos;s CO₂ figure.</p>\r\n            <div className=\"flex flex-col gap-2\">\r\n              <label className=\"text-xs text-slate-400\" htmlFor={`cloud-co2-${year}`}>\r\n                Enter total kilograms of CO₂ reported for {year}\r\n              </label>\r\n              <input\r\n                id={`cloud-co2-${year}`}\r\n                inputMode=\"numeric\"\r\n                pattern=\"[0-9]*\"\r\n                value={entry.cloudCo2}\r\n                onChange={(e) => setNumeric('cloudCo2', e.target.value)}\r\n                className={`${inputClass} ${hasError('cloudCo2') ? 'border-rose-500 focus:ring-rose-400' : 'focus:ring-sky-400'} w-full text-base font-semibold`}\r\n                aria-label=\"Cloud CO2 emissions\"\r\n                aria-invalid={hasError('cloudCo2')}\r\n                placeholder=\"0\"\r\n              />\r\n              {getFieldError('cloudCo2') && (\r\n                <p className=\"text-xs text-rose-300 mt-1\">{getFieldError('cloudCo2')}</p>\r\n              )}\r\n            </div>\r\n          </div>\r\n\r\n          {/* Air travel */}\r\n          <div className=\"p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-indigo-400/30 transition-all backdrop-blur\">\r\n            <div className=\"flex items-center gap-3 mb-4\">\r\n              <div className=\"p-3 rounded-2xl bg-indigo-500/15 text-indigo-200 border border-indigo-500/20\">\r\n                <Plane size={18} />\r\n              </div>\r\n              <div>\r\n                <p className=\"text-xs text-slate-400\">Business trips (air)</p>\r\n                <p className=\"text-sm font-semibold text-white\">Miles flown in {year}</p>\r\n              </div>\r\n            </div>\r\n            <p className=\"text-xs text-slate-400 mb-3\">Sum every mile flown on business itineraries this year (pull from your travel management or booking reports).</p>\r\n            <div className=\"flex flex-col gap-2\">\r\n              <label className=\"text-xs text-slate-400\" htmlFor={`flight-miles-${year}`}>Miles (all cabin classes combined)</label>\r\n              <input\r\n                id={`flight-miles-${year}`}\r\n                inputMode=\"numeric\"\r\n                pattern=\"[0-9]*\"\r\n                value={entry.flightMiles}\r\n                onChange={(e) => setNumeric('flightMiles', e.target.value)}\r\n                className={`${inputClass} ${hasError('flightMiles') ? 'border-rose-500 focus:ring-rose-400' : 'focus:ring-indigo-400'} w-full text-base font-semibold`}\r\n                aria-label=\"Flight miles\"\r\n                aria-invalid={hasError('flightMiles')}\r\n                placeholder=\"0\"\r\n              />\r\n              {getFieldError('flightMiles') && (\r\n                <p className=\"text-xs text-rose-300 mt-1\">{getFieldError('flightMiles')}</p>\r\n              )}\r\n            </div>\r\n          </div>\r\n\r\n          {/* Fleet fuel consumption */}\r\n          <div className=\"p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-amber-400/30 transition-all backdrop-blur lg:col-span-2\">\r\n            <div className=\"flex items-center gap-3 mb-4\">\r\n              <div className=\"p-3 rounded-2xl bg-amber-500/15 text-amber-300 border border-amber-500/20\">\r\n                <Car size={18} />\r\n              </div>\r\n              <div>\r\n                <p className=\"text-xs text-slate-400\">Company cars</p>\r\n                <p className=\"text-sm font-semibold text-white\">Fuel consumed in {year} (liters)</p>\r\n              </div>\r\n            </div>\r\n            <p className=\"text-xs text-slate-400 mb-3\">Track how much fuel was bought for the corporate fleet this year. Data usually comes from fuel cards or accounting statements.</p>\r\n            <div className=\"grid grid-cols-1 md:grid-cols-3 gap-4\">\r\n              <div className=\"flex flex-col gap-2\">\r\n                <label className=\"text-xs text-slate-400\" htmlFor={`fuel-petrol-${year}`}>Petrol (gasoline)</label>\r\n                <input\r\n                  id={`fuel-petrol-${year}`}\r\n                  inputMode=\"numeric\"\r\n                  pattern=\"[0-9]*\"\r\n                  value={entry.fuelPetrol}\r\n                  onChange={(e) => setNumeric('fuelPetrol', e.target.value)}\r\n                  className={`${fuelInputClass} ${hasError('fuelPetrol') ? 'border-rose-500 focus:ring-rose-400' : ''}`}\r\n                  aria-label=\"Petrol fuel consumption\"\r\n                  aria-invalid={hasError('fuelPetrol')}\r\n                  placeholder=\"0\"\r\n                />\r\n                {getFieldError('fuelPetrol') && (\r\n                  <p className=\"text-xs text-rose-300 mt-1\">{getFieldError('fuelPetrol')}</p>\r\n                )}\r\n              </div>\r\n              <div className=\"flex flex-col gap-2\">\r\n                <label className=\"text-xs text-slate-400\" htmlFor={`fuel-diesel-${year}`}>Diesel</label>\r\n                <input\r\n                  id={`fuel-diesel-${year}`}\r\n                  inputMode=\"numeric\"\r\n                  pattern=\"[0-9]*\"\r\n                  value={entry.fuelDiesel}\r\n                  onChange={(e) => setNumeric('fuelDiesel', e.target.value)}\r\n                  className={`${fuelInputClass} ${hasError('fuelDiesel') ? 'border-rose-500 focus:ring-rose-400' : ''}`}\r\n                  aria-label=\"Diesel fuel consumption\"\r\n                  aria-invalid={hasError('fuelDiesel')}\r\n                  placeholder=\"0\"\r\n                />\r\n                {getFieldError('fuelDiesel') && (\r\n                  <p className=\"text-xs text-rose-300 mt-1\">{getFieldError('fuelDiesel')}</p>\r\n                )}\r\n              </div>\r\n              <div className=\"flex flex-col gap-2\">\r\n                <label className=\"text-xs text-slate-400\" htmlFor={`fuel-lpg-${year}`}>LPG</label>\r\n                <input\r\n                  id={`fuel-lpg-${year}`}\r\n                  inputMode=\"numeric\"\r\n                  pattern=\"[0-9]*\"\r\n                  value={entry.fuelLpg}\r\n                  onChange={(e) => setNumeric('fuelLpg', e.target.value)}\r\n                  className={`${fuelInputClass} ${hasError('fuelLpg') ? 'border-rose-500 focus:ring-rose-400' : ''}`}\r\n                  aria-label=\"LPG fuel consumption\"\r\n                  aria-invalid={hasError('fuelLpg')}\r\n                  placeholder=\"0\"\r\n                />\r\n                {getFieldError('fuelLpg') && (\r\n                  <p className=\"text-xs text-rose-300 mt-1\">{getFieldError('fuelLpg')}</p>\r\n                )}\r\n              </div>\r\n            </div>\r\n          </div>\r\n        </div>\r\n\r\n        <div className=\"text-[11px] text-slate-500 uppercase tracking-[0.3em]\">All entries are saved automatically.</div>\r\n      </div>\r\n    </div>\r\n  );\r\n};\r\n\r\nexport default YearDataForm;\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ui/app/analysis/YearDataForm.tsx b/ui/app/analysis/YearDataForm.tsx
+--- a/ui/app/analysis/YearDataForm.tsx	(revision ce34cfc41fdd318094653b06261eb03706d619e4)
++++ b/ui/app/analysis/YearDataForm.tsx	(date 1764468713786)
+@@ -1,397 +1,338 @@
+ 'use client';
+ 
+ import React, { useEffect } from 'react';
+-import { FormikErrors, FormikTouched, useFormikContext } from 'formik';
++import { Field, FieldProps, useFormikContext } from 'formik';
+ import { Zap, Laptop, Monitor, Server, Cloud, Car, Plane } from 'lucide-react';
+ 
+ interface YearData {
+-  annualKwh: number | '';
+-  laptops: number | '';
+-  monitors: number | '';
+-  servers: number | '';
+-  cloudCo2: number | '';
+-  fuelPetrol: number | '';
+-  fuelDiesel: number | '';
+-  fuelLpg: number | '';
+-  flightMiles: number | '';
++    annualKwh: number | '';
++    laptops: number | '';
++    monitors: number | '';
++    servers: number | '';
++    cloudCo2: number | '';
++    fuelPetrol: number | '';
++    fuelDiesel: number | '';
++    fuelLpg: number | '';
++    flightMiles: number | '';
+ }
+ 
+ interface FormValues {
+-  yearlyData: Record<string, YearData>;
++    yearlyData: Record<string, YearData>;
+ }
+ 
+ const createEmptyYearData = (): YearData => ({
+-  annualKwh: 0,
+-  laptops: 0,
+-  monitors: 0,
+-  servers: 0,
+-  cloudCo2: 0,
+-  fuelPetrol: 0,
+-  fuelDiesel: 0,
+-  fuelLpg: 0,
+-  flightMiles: 0,
++    annualKwh: 0,
++    laptops: 0,
++    monitors: 0,
++    servers: 0,
++    cloudCo2: 0,
++    fuelPetrol: 0,
++    fuelDiesel: 0,
++    fuelLpg: 0,
++    flightMiles: 0,
+ });
+ 
+ type YearField = keyof YearData;
+ 
++const baseInput = 'flex-1 py-3 min-w-0 h-10 px-3 rounded-md bg-slate-900 text-white border focus:ring-2 text-right';
++const numericInput = `${baseInput} border-slate-700`;
++const textBlock = 'text-xs text-slate-400 mb-3';
++
+ const YearDataForm: React.FC<{ year: number }> = ({ year }) => {
+-  const { values, setFieldValue, errors, touched, setFieldTouched } = useFormikContext<FormValues>();
++    const { values, setFieldValue, setFieldTouched } = useFormikContext<FormValues>();
+ 
+-  const key = String(year);
+-  const entry: YearData = values.yearlyData?.[key] ?? createEmptyYearData();
++    const key = String(year);
++    const entry: YearData = values.yearlyData?.[key] ?? createEmptyYearData();
+ 
+-  useEffect(() => {
+-    if (!values.yearlyData?.[key]) {
+-      setFieldValue("yearlyData", {
+-        ...(values.yearlyData || {}),
+-        [key]: createEmptyYearData(),
+-      });
+-    }
+-    // eslint-disable-next-line react-hooks/exhaustive-deps
+-  }, []);
++    useEffect(() => {
++        if (!values.yearlyData?.[key]) {
++            setFieldValue('yearlyData', {
++                ...(values.yearlyData || {}),
++                [key]: createEmptyYearData(),
++            });
++        }
++        // eslint-disable-next-line react-hooks/exhaustive-deps
++    }, []);
+ 
+-  const setNumeric = (field: YearField, value: string | number) => {
+-    const parsed =
+-      value === ""
+-        ? ""
+-        : typeof value === "number"
+-        ? value
+-        : Number(value);
+-
+-    const safeValue = typeof parsed === "number" && Number.isNaN(parsed) ? "" : parsed;
+-
+-    setFieldValue("yearlyData", {
+-      ...(values.yearlyData || {}),
+-      [key]: {
+-        ...(values.yearlyData?.[key] || {}),
+-        [field]: safeValue,
+-      },
+-    });
+-
+-    setFieldTouched?.(`yearlyData.${key}.${field}`, true, false);
+-  };
++    const pathFor = (field: YearField) => `yearlyData.${key}.${field}`;
++
++    const setNumeric = (field: YearField, value: string | number) => {
++        const parsed = value === '' ? '' : typeof value === 'number' ? value : Number(value);
++        const safeValue = typeof parsed === 'number' && Number.isNaN(parsed) ? '' : parsed;
++        const fieldPath = pathFor(field);
++        setFieldValue(fieldPath, safeValue);
++        setFieldTouched?.(fieldPath, true, false);
++    };
+ 
+-  const adjustBy = (field: YearField, delta: number) => {
+-    const current = values.yearlyData?.[key]?.[field];
+-    const base = current === "" || current === undefined ? 0 : Number(current);
+-    setNumeric(field, Math.max(0, base + delta));
+-  };
++    const adjustBy = (field: YearField, delta: number) => {
++        const current = values.yearlyData?.[key]?.[field];
++        const base = current === '' || current === undefined ? 0 : Number(current);
++        setNumeric(field, Math.max(0, base + delta));
++    };
+ 
+-  const inc = (field: YearField, step = 1) => adjustBy(field, step);
+-  const dec = (field: YearField, step = 1) => adjustBy(field, -step);
++    const inc = (field: YearField, step = 1) => adjustBy(field, step);
++    const dec = (field: YearField, step = 1) => adjustBy(field, -step);
+ 
+-  const valueOrZero = (val: number | '') => (typeof val === 'number' ? val : 0);
+-  const totalDevices = valueOrZero(entry.laptops) + valueOrZero(entry.monitors) + valueOrZero(entry.servers);
+-  const cloudImpact = valueOrZero(entry.cloudCo2);
+-  const flightTotal = valueOrZero(entry.flightMiles);
++    const valueOrZero = (val: number | '') => (typeof val === 'number' ? val : 0);
++    const totalDevices = valueOrZero(entry.laptops) + valueOrZero(entry.monitors) + valueOrZero(entry.servers);
++    const cloudImpact = valueOrZero(entry.cloudCo2);
++    const flightTotal = valueOrZero(entry.flightMiles);
+ 
+-  const yearErrors = errors?.yearlyData?.[key] as FormikErrors<YearData> | undefined;
+-  const yearTouched = touched?.yearlyData?.[key] as FormikTouched<YearData> | undefined;
+-
+-  const getFieldError = (field: YearField): string | undefined => {
+-    if (!yearTouched?.[field]) return undefined;
+-    const errVal = yearErrors?.[field];
+-    return typeof errVal === 'string' ? errVal : undefined;
+-  };
++    const renderField = (
++        fieldKey: YearField,
++        props: { id?: string; className?: string; placeholder?: string }
++    ) => (
++        <Field name={pathFor(fieldKey)}>
++            {({ field, meta }: FieldProps<number | ''>) => (
++                <>
++                    <input
++                        {...field}
++                        id={props.id}
++                        inputMode="numeric"
++                        pattern="[0-9]*"
++                        value={field.value ?? ''}
++                        onChange={(e) => setNumeric(fieldKey, e.target.value)}
++                        className={`${props.className || numericInput} ${meta.touched && meta.error ? 'border-rose-500 focus:ring-rose-400' : ''}`}
++                        placeholder={props.placeholder ?? '0'}
++                        aria-invalid={Boolean(meta.touched && meta.error)}
++                    />
++                    {meta.touched && meta.error && (
++                        <p className="text-xs text-rose-300 mt-1">{meta.error}</p>
++                    )}
++                </>
++            )}
++        </Field>
++    );
+ 
+-  const hasError = (field: YearField) => Boolean(getFieldError(field));
+-
+-  const smallBtn = 'shrink-0 w-10 h-10 rounded-md flex items-center justify-center text-sm transition-transform transform-gpu hover:scale-105';
+-  const actionBtn = `${smallBtn} bg-emerald-500 text-slate-900 font-semibold`;
+-  const decBtn = `${smallBtn} bg-slate-700 text-slate-100`;
+-  const inputBase = 'flex-1 py-3 min-w-0 h-10 px-3 rounded-md bg-slate-900 text-white border focus:ring-2 text-right';
+-  const inputClass = `${inputBase} border-slate-700`;
+-  const fuelInputClass = `${inputBase} border-slate-700 focus:ring-sky-400 w-full text-base font-semibold`;
++    const smallBtn =
++        'shrink-0 w-10 h-10 rounded-md flex items-center justify-center text-sm transition-transform transform-gpu hover:scale-105';
++    const actionBtn = `${smallBtn} bg-emerald-500 text-slate-900 font-semibold`;
++    const decBtn = `${smallBtn} bg-slate-700 text-slate-100`;
++    const fuelInput = `${baseInput} border-slate-700 focus:ring-sky-400 w-full text-base font-semibold`;
+ 
+-  return (
+-    <div className="relative overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 shadow-[0_25px_100px_rgba(8,15,40,0.65)]">
+-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent)] pointer-events-none" />
+-      <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-emerald-500/20 blur-[120px] rounded-full pointer-events-none" />
++    return (
++        <div className="relative overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 shadow-[0_25px_100px_rgba(8,15,40,0.65)]">
++            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent)] pointer-events-none" />
++            <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-emerald-500/20 blur-[120px] rounded-full pointer-events-none" />
+ 
+-      <div className="relative flex flex-col gap-6">
+-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+-          <div>
+-            <p className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] uppercase tracking-[0.2em] text-slate-300">Annual purchase log</p>
+-            <h3 className="mt-3 text-2xl font-semibold text-white">New acquisitions in <span className="text-emerald-300">{year}</span></h3>
+-            <p className="text-sm text-slate-400">Capture how many assets were purchased and how much extra electricity those additions consumed that year.</p>
+-          </div>
++            <div className="relative flex flex-col gap-6">
++                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
++                    <div>
++                        <p className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] uppercase tracking-[0.2em] text-slate-300">
++                            Annual purchase log
++                        </p>
++                        <h3 className="mt-3 text-2xl font-semibold text-white">
++                            New acquisitions in <span className="text-emerald-300">{year}</span>
++                        </h3>
++                        <p className="text-sm text-slate-400">
++                            Capture how many assets were purchased and how much extra electricity those additions consumed that year.
++                        </p>
++                    </div>
+ 
+-          <div className="flex flex-wrap gap-3 text-xs">
+-            <div className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 text-white/80">
+-              Added load: <span className="text-white font-semibold">{valueOrZero(entry.annualKwh).toLocaleString()} kWh</span>
+-            </div>
+-            <div className="px-4 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-200">
+-              Devices purchased: <span className="text-emerald-300 font-semibold">{totalDevices}</span>
+-            </div>
+-            <div className="px-4 py-2 rounded-2xl bg-sky-500/10 border border-sky-400/30 text-sky-200">
+-              Cloud CO₂: <span className="text-sky-100 font-semibold">{cloudImpact.toLocaleString()} kg</span>
+-            </div>
+-            <div className="px-4 py-2 rounded-2xl bg-indigo-500/10 border border-indigo-400/30 text-indigo-200">
+-              Air miles: <span className="text-indigo-100 font-semibold">{flightTotal.toLocaleString()} mi</span>
+-            </div>
+-          </div>
+-        </div>
++                    <div className="flex flex-wrap gap-3 text-xs">
++                        <div className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 text-white/80">
++                            Added load: <span className="text-white font-semibold">{valueOrZero(entry.annualKwh).toLocaleString()} kWh</span>
++                        </div>
++                        <div className="px-4 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-200">
++                            Devices purchased: <span className="text-emerald-300 font-semibold">{totalDevices}</span>
++                        </div>
++                        <div className="px-4 py-2 rounded-2xl bg-sky-500/10 border border-sky-400/30 text-sky-200">
++                            Cloud CO₂: <span className="text-sky-100 font-semibold">{cloudImpact.toLocaleString()} kg</span>
++                        </div>
++                        <div className="px-4 py-2 rounded-2xl bg-indigo-500/10 border border-indigo-400/30 text-indigo-200">
++                            Air miles: <span className="text-indigo-100 font-semibold">{flightTotal.toLocaleString()} mi</span>
++                        </div>
++                    </div>
++                </div>
+ 
+-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+-          {/* Annual kWh */}
+-          <div className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-emerald-400/30 transition-all backdrop-blur">
+-            <div className="flex items-center gap-3 mb-4">
+-              <div className="p-3 rounded-2xl bg-amber-500/15 text-amber-300 border border-amber-500/20">
+-                <Zap size={18} />
+-              </div>
+-              <div>
+-                <p className="text-xs text-slate-400">Electricity impact</p>
+-                <p className="text-sm font-semibold text-white">Additional load (kWh)</p>
+-              </div>
+-            </div>
+-            <p className="text-xs text-slate-400 mb-3">Extra electricity consumed by the new purchases made in {year}. Enter the total incremental kWh.</p>
+-            <div className="flex flex-col gap-2">
+-              <label className="text-xs text-slate-400" htmlFor={`annual-kwh-${year}`}>
+-                Input the value in kWh (e.g. 12,500,000)
+-              </label>
+-              <input
+-                id={`annual-kwh-${year}`}
+-                inputMode="numeric"
+-                pattern="[0-9]*"
+-                value={entry.annualKwh}
+-                onChange={(e) => setNumeric('annualKwh', e.target.value)}
+-                className={`${inputClass} ${hasError('annualKwh') ? 'border-rose-500 focus:ring-rose-400' : 'focus:ring-amber-400'} w-full text-base sm:text-lg font-semibold`}
+-                aria-label="Roczne zużycie kWh"
+-                aria-invalid={hasError('annualKwh')}
+-                placeholder="0"
+-              />
+-              {getFieldError('annualKwh') && (
+-                <p className="text-xs text-rose-300 mt-1">{getFieldError('annualKwh')}</p>
+-              )}
+-            </div>
+-          </div>
++                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
++                    <div className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-emerald-400/30 transition-all backdrop-blur">
++                        <div className="flex items-center gap-3 mb-4">
++                            <div className="p-3 rounded-2xl bg-amber-500/15 text-amber-300 border border-amber-500/20">
++                                <Zap size={18} />
++                            </div>
++                            <div>
++                                <p className="text-xs text-slate-400">Electricity impact</p>
++                                <p className="text-sm font-semibold text-white">Additional load (kWh)</p>
++                            </div>
++                        </div>
++                        <p className={textBlock}>Extra electricity consumed by the new purchases made in {year}. Enter the total incremental kWh.</p>
++                        <div className="flex flex-col gap-2">
++                            <label className="text-xs text-slate-400" htmlFor={`annual-kwh-${year}`}>
++                                Input the value in kWh (e.g. 12,500,000)
++                            </label>
++                            {renderField('annualKwh', {
++                                id: `annual-kwh-${year}`,
++                                className: `${numericInput} focus:ring-amber-400 w-full text-base sm:text-lg font-semibold`,
++                            })}
++                        </div>
++                    </div>
+ 
+-          {/* Laptops */}
+-          <div className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-blue-400/30 transition-all backdrop-blur">
+-            <div className="flex items-center gap-3 mb-4">
+-              <div className="p-3 rounded-2xl bg-blue-500/15 text-blue-300 border border-blue-500/20">
+-                <Laptop size={18} />
+-              </div>
+-              <div>
+-                <p className="text-xs text-slate-400">Mobile fleet</p>
+-                <p className="text-sm font-semibold text-white">Laptops purchased</p>
+-              </div>
+-            </div>
+-            <p className="text-xs text-slate-400 mb-3">How many laptops were added to the inventory in {year}.</p>
+-            <div className="flex items-center gap-2">
+-              <button type="button" onClick={() => dec('laptops')} className={decBtn} aria-label="zmniejsz laptopy">-</button>
+-              <input
+-                inputMode="numeric"
+-                pattern="[0-9]*"
+-                value={entry.laptops}
+-                onChange={(e) => setNumeric('laptops', e.target.value)}
+-                className={`${inputClass} ${hasError('laptops') ? 'border-rose-500 focus:ring-rose-400' : 'focus:ring-blue-400'} max-w-[10rem]`}
+-                aria-label="Laptopy"
+-                aria-invalid={hasError('laptops')}
+-              />
+-              <button type="button" onClick={() => inc('laptops')} className={actionBtn} aria-label="zwiększ laptopy">+</button>
+-            </div>
+-            {getFieldError('laptops') && (
+-              <p className="text-xs text-rose-300 mt-1">{getFieldError('laptops')}</p>
+-            )}
+-          </div>
++                    <div className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-blue-400/30 transition-all backdrop-blur">
++                        <div className="flex items-center gap-3 mb-4">
++                            <div className="p-3 rounded-2xl bg-blue-500/15 text-blue-300 border border-blue-500/20">
++                                <Laptop size={18} />
++                            </div>
++                            <div>
++                                <p className="text-xs text-slate-400">Mobile fleet</p>
++                                <p className="text-sm font-semibold text-white">Laptops purchased</p>
++                            </div>
++                        </div>
++                        <p className={textBlock}>How many laptops were added to the inventory in {year}.</p>
++                        <div className="flex items-center gap-2">
++                            <button type="button" onClick={() => dec('laptops')} className={decBtn} aria-label="Decrease laptops">
++                                -
++                            </button>
++                            {renderField('laptops', {
++                                className: `${numericInput} focus:ring-blue-400 max-w-[10rem]`,
++                            })}
++                            <button type="button" onClick={() => inc('laptops')} className={actionBtn} aria-label="Increase laptops">
++                                +
++                            </button>
++                        </div>
++                    </div>
+ 
+-          {/* Monitors */}
+-          <div className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-indigo-400/30 transition-all backdrop-blur">
+-            <div className="flex items-center gap-3 mb-4">
+-              <div className="p-3 rounded-2xl bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">
+-                <Monitor size={18} />
+-              </div>
+-              <div>
+-                <p className="text-xs text-slate-400">Workstations</p>
+-                <p className="text-sm font-semibold text-white">Monitors purchased</p>
+-              </div>
+-            </div>
+-            <p className="text-xs text-slate-400 mb-3">How many monitors were bought during {year}.</p>
+-            <div className="flex items-center gap-2">
+-              <button type="button" onClick={() => dec('monitors')} className={decBtn} aria-label="zmniejsz monitory">-</button>
+-              <input
+-                inputMode="numeric"
+-                pattern="[0-9]*"
+-                value={entry.monitors}
+-                onChange={(e) => setNumeric('monitors', e.target.value)}
+-                className={`${inputClass} ${hasError('monitors') ? 'border-rose-500 focus:ring-rose-400' : 'focus:ring-indigo-400'} max-w-[10rem]`}
+-                aria-label="Monitory"
+-                aria-invalid={hasError('monitors')}
+-              />
+-              <button type="button" onClick={() => inc('monitors')} className={actionBtn} aria-label="zwiększ monitory">+</button>
+-            </div>
+-            {getFieldError('monitors') && (
+-              <p className="text-xs text-rose-300 mt-1">{getFieldError('monitors')}</p>
+-            )}
+-          </div>
++                    <div className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-indigo-400/30 transition-all backdrop-blur">
++                        <div className="flex items-center gap-3 mb-4">
++                            <div className="p-3 rounded-2xl bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">
++                                <Monitor size={18} />
++                            </div>
++                            <div>
++                                <p className="text-xs text-slate-400">Workstations</p>
++                                <p className="text-sm font-semibold text-white">Monitors purchased</p>
++                            </div>
++                        </div>
++                        <p className={textBlock}>How many monitors were bought during {year}.</p>
++                        <div className="flex items-center gap-2">
++                            <button type="button" onClick={() => dec('monitors')} className={decBtn} aria-label="Decrease monitors">
++                                -
++                            </button>
++                            {renderField('monitors', {
++                                className: `${numericInput} focus:ring-indigo-400 max-w-[10rem]`,
++                            })}
++                            <button type="button" onClick={() => inc('monitors')} className={actionBtn} aria-label="Increase monitors">
++                                +
++                            </button>
++                        </div>
++                    </div>
+ 
+-          {/* Servers */}
+-          <div className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-rose-400/30 transition-all backdrop-blur">
+-            <div className="flex items-center gap-3 mb-4">
+-              <div className="p-3 rounded-2xl bg-rose-500/15 text-rose-300 border border-rose-500/20">
+-                <Server size={18} />
+-              </div>
+-              <div>
+-                <p className="text-xs text-slate-400">Infrastructure</p>
+-                <p className="text-sm font-semibold text-white">Servers purchased</p>
+-              </div>
+-            </div>
+-            <p className="text-xs text-slate-400 mb-3">Count the physical or virtual servers acquired in {year}.</p>
+-            <div className="flex items-center gap-2">
+-              <button type="button" onClick={() => dec('servers', 1)} className={decBtn} aria-label="zmniejsz serwery">-</button>
+-              <input
+-                inputMode="numeric"
+-                pattern="[0-9]*"
+-                value={entry.servers}
+-                onChange={(e) => setNumeric('servers', e.target.value)}
+-                className={`${inputClass} ${hasError('servers') ? 'border-rose-500 focus:ring-rose-400' : 'focus:ring-rose-400'} max-w-[10rem]`}
+-                aria-label="Serwery"
+-                aria-invalid={hasError('servers')}
+-              />
+-              <button type="button" onClick={() => inc('servers', 1)} className={actionBtn} aria-label="zwiększ serwery">+</button>
+-            </div>
+-            {getFieldError('servers') && (
+-              <p className="text-xs text-rose-300 mt-1">{getFieldError('servers')}</p>
+-            )}
+-          </div>
++                    <div className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-rose-400/30 transition-all backdrop-blur">
++                        <div className="flex itemsCenter gap-3 mb-4">
++                            <div className="p-3 rounded-2xl bg-rose-500/15 text-rose-300 border border-rose-500/20">
++                                <Server size={18} />
++                            </div>
++                            <div>
++                                <p className="text-xs text-slate-400">Infrastructure</p>
++                                <p className="text-sm font-semibold text-white">Servers purchased</p>
++                            </div>
++                        </div>
++                        <p className={textBlock}>Count the physical or virtual servers acquired in {year}.</p>
++                        <div className="flex items-center gap-2">
++                            <button type="button" onClick={() => dec('servers')} className={decBtn} aria-label="Decrease servers">
++                                -
++                            </button>
++                            {renderField('servers', {
++                                className: `${numericInput} focus:ring-rose-400 max-w-[10rem]`,
++                            })}
++                            <button type="button" onClick={() => inc('servers')} className={actionBtn} aria-label="Increase servers">
++                                +
++                            </button>
++                        </div>
++                    </div>
+ 
+-          {/* Cloud CO₂ */}
+-          <div className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-sky-400/30 transition-all backdrop-blur">
+-            <div className="flex items-center gap-3 mb-4">
+-              <div className="p-3 rounded-2xl bg-sky-500/15 text-sky-200 border border-sky-500/20">
+-                <Cloud size={18} />
+-              </div>
+-              <div>
+-                <p className="text-xs text-slate-400">Cloud footprint</p>
+-                <p className="text-sm font-semibold text-white">Cloud CO₂ emissions (kg)</p>
+-              </div>
+-            </div>
+-            <p className="text-xs text-slate-400 mb-3">Use the sustainability dashboard from your cloud operator (AWS, Azure, GCP, etc.) to obtain this year&apos;s CO₂ figure.</p>
+-            <div className="flex flex-col gap-2">
+-              <label className="text-xs text-slate-400" htmlFor={`cloud-co2-${year}`}>
+-                Enter total kilograms of CO₂ reported for {year}
+-              </label>
+-              <input
+-                id={`cloud-co2-${year}`}
+-                inputMode="numeric"
+-                pattern="[0-9]*"
+-                value={entry.cloudCo2}
+-                onChange={(e) => setNumeric('cloudCo2', e.target.value)}
+-                className={`${inputClass} ${hasError('cloudCo2') ? 'border-rose-500 focus:ring-rose-400' : 'focus:ring-sky-400'} w-full text-base font-semibold`}
+-                aria-label="Cloud CO2 emissions"
+-                aria-invalid={hasError('cloudCo2')}
+-                placeholder="0"
+-              />
+-              {getFieldError('cloudCo2') && (
+-                <p className="text-xs text-rose-300 mt-1">{getFieldError('cloudCo2')}</p>
+-              )}
+-            </div>
+-          </div>
++                    <div className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-sky-400/30 transition-all backdrop-blur">
++                        <div className="flex items-center gap-3 mb-4">
++                            <div className="p-3 rounded-2xl bg-sky-500/15 text-sky-200 border border-sky-500/20">
++                                <Cloud size={18} />
++                            </div>
++                            <div>
++                                <p className="text-xs text-slate-400">Cloud footprint</p>
++                                <p className="text-sm font-semibold text-white">Cloud CO₂ emissions (kg)</p>
++                            </div>
++                        </div>
++                        <p className={textBlock}>Use the sustainability dashboard from your cloud provider to provide this year&apos;s CO₂ figure.</p>
++                        <div className="flex flex-col gap-2">
++                            <label className="text-xs text-slate-400" htmlFor={`cloud-co2-${year}`}>
++                                Enter total kilograms reported for {year}
++                            </label>
++                            {renderField('cloudCo2', {
++                                id: `cloud-co2-${year}`,
++                                className: `${numericInput} focus:ring-sky-400 w-full text-base font-semibold`,
++                            })}
++                        </div>
++                    </div>
+ 
+-          {/* Air travel */}
+-          <div className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-indigo-400/30 transition-all backdrop-blur">
+-            <div className="flex items-center gap-3 mb-4">
+-              <div className="p-3 rounded-2xl bg-indigo-500/15 text-indigo-200 border border-indigo-500/20">
+-                <Plane size={18} />
+-              </div>
+-              <div>
+-                <p className="text-xs text-slate-400">Business trips (air)</p>
+-                <p className="text-sm font-semibold text-white">Miles flown in {year}</p>
+-              </div>
+-            </div>
+-            <p className="text-xs text-slate-400 mb-3">Sum every mile flown on business itineraries this year (pull from your travel management or booking reports).</p>
+-            <div className="flex flex-col gap-2">
+-              <label className="text-xs text-slate-400" htmlFor={`flight-miles-${year}`}>Miles (all cabin classes combined)</label>
+-              <input
+-                id={`flight-miles-${year}`}
+-                inputMode="numeric"
+-                pattern="[0-9]*"
+-                value={entry.flightMiles}
+-                onChange={(e) => setNumeric('flightMiles', e.target.value)}
+-                className={`${inputClass} ${hasError('flightMiles') ? 'border-rose-500 focus:ring-rose-400' : 'focus:ring-indigo-400'} w-full text-base font-semibold`}
+-                aria-label="Flight miles"
+-                aria-invalid={hasError('flightMiles')}
+-                placeholder="0"
+-              />
+-              {getFieldError('flightMiles') && (
+-                <p className="text-xs text-rose-300 mt-1">{getFieldError('flightMiles')}</p>
+-              )}
+-            </div>
+-          </div>
++                    <div className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-indigo-400/30 transition-all backdrop-blur">
++                        <div className="flex items-center gap-3 mb-4">
++                            <div className="p-3 rounded-2xl bg-indigo-500/15 text-indigo-200 border border-indigo-500/20">
++                                <Plane size={18} />
++                            </div>
++                            <div>
++                                <p className="text-xs text-slate-400">Business trips (air)</p>
++                                <p className="text-sm font-semibold text-white">Miles flown in {year}</p>
++                            </div>
++                        </div>
++                        <p className={textBlock}>Sum every mile flown on business itineraries this year.</p>
++                        <div className="flex flex-col gap-2">
++                            <label className="text-xs text-slate-400" htmlFor={`flight-miles-${year}`}>
++                                Miles (all cabin classes combined)
++                            </label>
++                            {renderField('flightMiles', {
++                                id: `flight-miles-${year}`,
++                                className: `${numericInput} focus:ring-indigo-400 w-full text-base font-semibold`,
++                            })}
++                        </div>
++                    </div>
+ 
+-          {/* Fleet fuel consumption */}
+-          <div className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-amber-400/30 transition-all backdrop-blur lg:col-span-2">
+-            <div className="flex items-center gap-3 mb-4">
+-              <div className="p-3 rounded-2xl bg-amber-500/15 text-amber-300 border border-amber-500/20">
+-                <Car size={18} />
+-              </div>
+-              <div>
+-                <p className="text-xs text-slate-400">Company cars</p>
+-                <p className="text-sm font-semibold text-white">Fuel consumed in {year} (liters)</p>
+-              </div>
+-            </div>
+-            <p className="text-xs text-slate-400 mb-3">Track how much fuel was bought for the corporate fleet this year. Data usually comes from fuel cards or accounting statements.</p>
+-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+-              <div className="flex flex-col gap-2">
+-                <label className="text-xs text-slate-400" htmlFor={`fuel-petrol-${year}`}>Petrol (gasoline)</label>
+-                <input
+-                  id={`fuel-petrol-${year}`}
+-                  inputMode="numeric"
+-                  pattern="[0-9]*"
+-                  value={entry.fuelPetrol}
+-                  onChange={(e) => setNumeric('fuelPetrol', e.target.value)}
+-                  className={`${fuelInputClass} ${hasError('fuelPetrol') ? 'border-rose-500 focus:ring-rose-400' : ''}`}
+-                  aria-label="Petrol fuel consumption"
+-                  aria-invalid={hasError('fuelPetrol')}
+-                  placeholder="0"
+-                />
+-                {getFieldError('fuelPetrol') && (
+-                  <p className="text-xs text-rose-300 mt-1">{getFieldError('fuelPetrol')}</p>
+-                )}
+-              </div>
+-              <div className="flex flex-col gap-2">
+-                <label className="text-xs text-slate-400" htmlFor={`fuel-diesel-${year}`}>Diesel</label>
+-                <input
+-                  id={`fuel-diesel-${year}`}
+-                  inputMode="numeric"
+-                  pattern="[0-9]*"
+-                  value={entry.fuelDiesel}
+-                  onChange={(e) => setNumeric('fuelDiesel', e.target.value)}
+-                  className={`${fuelInputClass} ${hasError('fuelDiesel') ? 'border-rose-500 focus:ring-rose-400' : ''}`}
+-                  aria-label="Diesel fuel consumption"
+-                  aria-invalid={hasError('fuelDiesel')}
+-                  placeholder="0"
+-                />
+-                {getFieldError('fuelDiesel') && (
+-                  <p className="text-xs text-rose-300 mt-1">{getFieldError('fuelDiesel')}</p>
+-                )}
+-              </div>
+-              <div className="flex flex-col gap-2">
+-                <label className="text-xs text-slate-400" htmlFor={`fuel-lpg-${year}`}>LPG</label>
+-                <input
+-                  id={`fuel-lpg-${year}`}
+-                  inputMode="numeric"
+-                  pattern="[0-9]*"
+-                  value={entry.fuelLpg}
+-                  onChange={(e) => setNumeric('fuelLpg', e.target.value)}
+-                  className={`${fuelInputClass} ${hasError('fuelLpg') ? 'border-rose-500 focus:ring-rose-400' : ''}`}
+-                  aria-label="LPG fuel consumption"
+-                  aria-invalid={hasError('fuelLpg')}
+-                  placeholder="0"
+-                />
+-                {getFieldError('fuelLpg') && (
+-                  <p className="text-xs text-rose-300 mt-1">{getFieldError('fuelLpg')}</p>
+-                )}
+-              </div>
+-            </div>
+-          </div>
+-        </div>
++                    <div className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-amber-400/30 transition-all backdrop-blur lg:col-span-2">
++                        <div className="flex items-center gap-3 mb-4">
++                            <div className="p-3 rounded-2xl bg-amber-500/15 text-amber-300 border border-amber-500/20">
++                                <Car size={18} />
++                            </div>
++                            <div>
++                                <p className="text-xs text-slate-400">Company cars</p>
++                                <p className="text-sm font-semibold text-white">Fuel consumed in {year} (litres)</p>
++                            </div>
++                        </div>
++                        <p className={textBlock}>Track how much fuel was bought for the corporate fleet this year.</p>
++                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
++                            <div className="flex flex-col gap-2">
++                                <label className="text-xs text-slate-400" htmlFor={`fuel-petrol-${year}`}>
++                                    Petrol (gasoline)
++                                </label>
++                                {renderField('fuelPetrol', {
++                                    id: `fuel-petrol-${year}`,
++                                    className: fuelInput,
++                                })}
++                            </div>
++                            <div className="flex flex-col gap-2">
++                                <label className="text-xs text-slate-400" htmlFor={`fuel-diesel-${year}`}>
++                                    Diesel
++                                </label>
++                                {renderField('fuelDiesel', {
++                                    id: `fuel-diesel-${year}`,
++                                    className: fuelInput,
++                                })}
++                            </div>
++                            <div className="flex flex-col gap-2">
++                                <label className="text-xs text-slate-400" htmlFor={`fuel-lpg-${year}`}>
++                                    LPG
++                                </label>
++                                {renderField('fuelLpg', {
++                                    id: `fuel-lpg-${year}`,
++                                    className: fuelInput,
++                                })}
++                            </div>
++                        </div>
++                    </div>
++                </div>
+ 
+-        <div className="text-[11px] text-slate-500 uppercase tracking-[0.3em]">All entries are saved automatically.</div>
+-      </div>
+-    </div>
+-  );
++                <div className="text-[11px] text-slate-500 uppercase tracking-[0.3em]">
++                    All entries are saved automatically.
++                </div>
++            </div>
++        </div>
++    );
+ };
+ 
+ export default YearDataForm;
+Index: ui/functions/trendsApi.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import type { RequestInit } from 'next/dist/server/web/spec-extension/request';\r\n\r\nconst BASE_URL = process.env.NEXT_PUBLIC_TRENDS_API_BASE?.replace(/\\/$/, '') || 'http://localhost:5000';\r\nconst JSON_HEADERS: HeadersInit = { 'Content-Type': 'application/json' };\r\n\r\nexport type TrendsModel = 'linear' | 'poly2' | 'arima';\r\n\r\nexport interface TrendsRequest {\r\n  years: number[];\r\n  values: number[];\r\n  stepsAhead?: number;\r\n  model?: TrendsModel;\r\n}\r\n\r\nexport interface TrendsHistoryPoint {\r\n  year: number;\r\n  value: number;\r\n}\r\n\r\nexport interface TrendsForecastPoint {\r\n  year: number;\r\n  predicted_value: number;\r\n}\r\n\r\nexport interface TrendsResponse {\r\n  model: TrendsModel;\r\n  history: TrendsHistoryPoint[];\r\n  forecast: TrendsForecastPoint[];\r\n}\r\n\r\nasync function request<T>(path: string, init?: RequestInit): Promise<T> {\r\n  const res = await fetch(`${BASE_URL}${path}`, {\r\n    ...init,\r\n    headers: { ...JSON_HEADERS, ...(init?.headers || {}) },\r\n  });\r\n\r\n  if (!res.ok) {\r\n    const message = await safeReadError(res);\r\n    throw new Error(`Trends API error (${res.status}): ${message}`);\r\n  }\r\n\r\n  return res.json() as Promise<T>;\r\n}\r\n\r\nasync function safeReadError(res: Response): Promise<string> {\r\n  try {\r\n    const data = await res.json();\r\n    return (data?.error as string) || JSON.stringify(data);\r\n  } catch (e) {\r\n    return await res.text();\r\n  }\r\n}\r\n\r\nexport async function fetchTrendsForecast(payload: TrendsRequest): Promise<TrendsResponse> {\r\n  if (!payload.years?.length || !payload.values?.length) {\r\n    throw new Error('years and values arrays are required');\r\n  }\r\n\r\n  return request<TrendsResponse>('/predict', {\r\n    method: 'POST',\r\n    body: JSON.stringify({\r\n      years: payload.years,\r\n      values: payload.values,\r\n      steps_ahead: payload.stepsAhead ?? 3,\r\n      model: payload.model ?? 'linear',\r\n    }),\r\n  });\r\n}\r\n\r\nexport async function fetchTrendsHealth(): Promise<{ status: string }> {\r\n  return request<{ status: string }>('/health');\r\n}\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ui/functions/trendsApi.ts b/ui/functions/trendsApi.ts
+--- a/ui/functions/trendsApi.ts	(revision ce34cfc41fdd318094653b06261eb03706d619e4)
++++ b/ui/functions/trendsApi.ts	(date 1764466511163)
+@@ -1,3 +1,4 @@
++'use server';
+ import type { RequestInit } from 'next/dist/server/web/spec-extension/request';
+ 
+ const BASE_URL = process.env.NEXT_PUBLIC_TRENDS_API_BASE?.replace(/\/$/, '') || 'http://localhost:5000';
+Index: ui/app/analysis/page.tsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>'use client';\r\n\r\nimport { useState, useRef, useEffect } from \"react\";\r\nimport { Formik, Form, FormikHelpers, FormikErrors } from \"formik\";\r\nimport * as Yup from \"yup\";\r\nimport { Sparkles } from \"lucide-react\";\r\nimport { CountrySelect } from \"./CountrySelect\";\r\nimport { YearSelector } from \"./YearSelector\";\r\nimport YearDataForm from \"./YearDataForm\";\r\nimport { Swiper, SwiperSlide } from \"swiper/react\";\r\nimport type { Swiper as SwiperClass } from \"swiper\";\r\nimport \"swiper/css\";\r\nimport YearTrendsChart from \"./YearTrendsChart\";\r\n\r\ninterface YearlyEntry {\r\n    annualKwh: number | \"\";\r\n    laptops: number | \"\";\r\n    monitors: number | \"\";\r\n    servers: number | \"\";\r\n    cloudCo2: number | \"\";\r\n    fuelPetrol: number | \"\";\r\n    fuelDiesel: number | \"\";\r\n    fuelLpg: number | \"\";\r\n    flightMiles: number | \"\";\r\n}\r\n\r\ninterface FormValues {\r\n    country: string;\r\n    annualKwh: number | \"\";\r\n    selectedYears: number[];\r\n    yearlyData: Record<string, YearlyEntry>;\r\n}\r\n\r\ntype YearEntry = FormValues[\"yearlyData\"][string];\r\n\r\n// Yup schema for a single year entry\r\nconst yearEntrySchema = Yup.object({\r\n    annualKwh: Yup.number()\r\n        .typeError(\"Enter a valid number\")\r\n        .min(0, \"Must be zero or greater\")\r\n        .required(\"Required\"),\r\n    laptops: Yup.number()\r\n        .typeError(\"Enter a valid number\")\r\n        .min(0, \"Must be zero or greater\")\r\n        .required(\"Required\"),\r\n    monitors: Yup.number()\r\n        .typeError(\"Enter a valid number\")\r\n        .min(0, \"Must be zero or greater\")\r\n        .required(\"Required\"),\r\n    servers: Yup.number()\r\n        .typeError(\"Enter a valid number\")\r\n        .min(0, \"Must be zero or greater\")\r\n        .required(\"Required\"),\r\n    cloudCo2: Yup.number()\r\n        .typeError(\"Enter a valid number\")\r\n        .min(0, \"Must be zero or greater\")\r\n        .required(\"Required\"),\r\n    fuelPetrol: Yup.number()\r\n        .typeError(\"Enter a valid number\")\r\n        .min(0, \"Must be zero or greater\")\r\n        .required(\"Required\"),\r\n    fuelDiesel: Yup.number()\r\n        .typeError(\"Enter a valid number\")\r\n        .min(0, \"Must be zero or greater\")\r\n        .required(\"Required\"),\r\n    fuelLpg: Yup.number()\r\n        .typeError(\"Enter a valid number\")\r\n        .min(0, \"Must be zero or greater\")\r\n        .required(\"Required\"),\r\n    flightMiles: Yup.number()\r\n        .typeError(\"Enter a valid number\")\r\n        .min(0, \"Must be zero or greater\")\r\n        .required(\"Required\"),\r\n});\r\n\r\nconst validationSchema = Yup.object({\r\n    country: Yup.string().required(\"Please select a country\"),\r\n    annualKwh: Yup.number()\r\n        .typeError(\"Please enter a valid number\")\r\n        .min(0, \"Value must be zero or greater\")\r\n        .required(\"Please provide annual electricity consumption\"),\r\n    selectedYears: Yup.array().of(Yup.number()).optional(),\r\n    yearlyData: Yup.object().test(\r\n        \"valid-years\",\r\n        \"Please fill in all fields for every selected year\",\r\n        function (obj) {\r\n            const { selectedYears } = this.parent as FormValues;\r\n            if (!selectedYears || selectedYears.length === 0) return true;\r\n            const data = (obj || {}) as Record<string, YearEntry>;\r\n            // all selected years must satisfy schema\r\n            return selectedYears.every((yr) => {\r\n                const entry = data[String(yr)];\r\n                return yearEntrySchema.isValidSync(entry);\r\n            });\r\n        }\r\n    ),\r\n});\r\n\r\nconst INITIAL_VALUES: FormValues = {\r\n    country: \"polska\",\r\n    annualKwh: \"\",\r\n    selectedYears: [],\r\n    yearlyData: {},\r\n};\r\n\r\nexport default function Page() {\r\n    const [activeStep, setActiveStep] = useState(0);\r\n    const swiperRef = useRef<SwiperClass | null>(null);\r\n    const sliderRef = useRef<HTMLDivElement>(null);\r\n    const headerRef = useRef<HTMLDivElement>(null);\r\n\r\n    const scrollToHeader = () => {\r\n        const el = headerRef.current;\r\n        if (!el) return;\r\n        el.scrollIntoView({ behavior: \"smooth\", block: \"start\" });\r\n    };\r\n\r\n    useEffect(() => {\r\n        scrollToHeader();\r\n    }, [activeStep]);\r\n\r\n    const goNext = () => {\r\n        swiperRef.current?.slideNext();\r\n        scrollToHeader();\r\n    };\r\n    const goBack = () => {\r\n        swiperRef.current?.slidePrev();\r\n        scrollToHeader();\r\n    };\r\n\r\n    const handleSubmit = (\r\n        values: FormValues,\r\n        helpers: FormikHelpers<FormValues>\r\n    ) => {\r\n        console.log(\r\n            \"Selected country:\",\r\n            values.country,\r\n            \"Annual kWh:\",\r\n            values.annualKwh,\r\n            \"Selected years:\",\r\n            values.selectedYears,\r\n            \"Yearly data:\",\r\n            values.yearlyData\r\n        );\r\n        helpers.setSubmitting(false);\r\n    };\r\n\r\n    const handleNextFromStep0 = async (\r\n        validateForm: (values?: FormValues) => Promise<FormikErrors<FormValues>>,\r\n        setFieldTouched: (\r\n            field: string,\r\n            isTouched?: boolean,\r\n            shouldValidate?: boolean\r\n        ) => void,\r\n        values: FormValues\r\n    ) => {\r\n        // walidujemy tylko country zanim przejdziemy dalej\r\n        setFieldTouched(\"country\", true, false);\r\n        const errors = await validateForm(values);\r\n        if (!errors.country) {\r\n            swiperRef.current?.slideNext();\r\n        }\r\n    };\r\n\r\n    return (\r\n        <div className=\"max-w-5xl mx-auto px-6 py-12 pb-24 pt-24\">\r\n            {/* Header */}\r\n            <div ref={headerRef} className=\"mb-10 border-b border-white/10 pb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4\">\r\n                <div>\r\n                    <div className=\"inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-400/40 text-emerald-300 text-xs font-semibold tracking-wide mb-3\">\r\n                        <Sparkles className=\"w-3 h-3\" />\r\n                        <span>CO₂ Calculator</span>\r\n                    </div>\r\n                    <h1 className=\"text-3xl md:text-4xl font-bold text-white mb-2 leading-tight\">\r\n                        Model your company&apos;s\r\n                        <span className=\"block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400\">\r\n              carbon footprint step by step\r\n            </span>\r\n                    </h1>\r\n                    <p className=\"text-slate-400 text-sm md:text-base max-w-xl\">\r\n                        Start with the country and annual electricity usage. You can always\r\n                        come back and adjust these values later.\r\n                    </p>\r\n                </div>\r\n            </div>\r\n\r\n            <Formik<FormValues>\r\n                initialValues={INITIAL_VALUES}\r\n                validationSchema={validationSchema}\r\n                onSubmit={handleSubmit}\r\n            >\r\n                {({ isSubmitting, validateForm, setFieldTouched, values, errors }) => {\r\n                    const sortedYears = (values.selectedYears || [])\r\n                        .slice()\r\n                        .sort((a, b) => a - b);\r\n                    const totalSlides = 2 + sortedYears.length;\r\n                    const canProceedPastYearSelect = sortedYears.length > 0;\r\n\r\n                    const hasYearData = sortedYears.length > 0;\r\n                    const totalSlidesWithChart = totalSlides + (hasYearData ? 1 : 0);\r\n\r\n                    const normalizeValue = (val: number | \"\") =>\r\n                        typeof val === \"number\" && Number.isFinite(val) ? val : 0;\r\n                    const trendData = sortedYears.map((yr) => {\r\n                        const entry = values.yearlyData?.[String(yr)];\r\n                        return {\r\n                            year: yr,\r\n                            annualKwh: entry ? normalizeValue(entry.annualKwh) : 0,\r\n                            cloudCo2: entry ? normalizeValue(entry.cloudCo2) : 0,\r\n                            flightMiles: entry ? normalizeValue(entry.flightMiles) : 0,\r\n                            deviceCount: entry\r\n                                ? normalizeValue(entry.laptops) + normalizeValue(entry.monitors) + normalizeValue(entry.servers)\r\n                                : 0,\r\n                        };\r\n                    });\r\n\r\n                     return (\r\n                        <Form className=\"space-y-8\">\r\n                            {/* Step indicator */}\r\n                            <div className=\"flex items-center gap-3 text-xs text-slate-400\">\r\n                <span>\r\n                  Step {activeStep + 1} of {totalSlidesWithChart}\r\n                </span>\r\n                            </div>\r\n\r\n                            {/* Steps */}\r\n                            <div ref={sliderRef} className=\"relative min-h-[260px]\">\r\n                                <Swiper\r\n                                    onSwiper={(sw: SwiperClass) => (swiperRef.current = sw)}\r\n                                    onSlideChange={(sw: SwiperClass) =>\r\n                                        setActiveStep(sw.activeIndex)\r\n                                    }\r\n                                    spaceBetween={50}\r\n                                    slidesPerView={1}\r\n                                    speed={500}\r\n                                    allowTouchMove={false}\r\n                                    className=\"!h-auto\"\r\n                                >\r\n                                    {/* Step 1: Country */}\r\n                                    <SwiperSlide>\r\n                                        <div className=\"transition-all duration-300 ease-out opacity-100 translate-x-0 space-y-6\">\r\n                                            <CountrySelect />\r\n                                            <div className=\"flex justify-end\">\r\n                                                <button\r\n                                                    type=\"button\"\r\n                                                    onClick={() =>\r\n                                                        handleNextFromStep0(\r\n                                                            validateForm,\r\n                                                            setFieldTouched,\r\n                                                            values\r\n                                                        )\r\n                                                    }\r\n                                                    className=\"px-6 py-3 bg-eco-500 hover:bg-eco-400 rounded-2xl text-xs md:text-sm font-semibold text-slate-900 flex items-center gap-2 transition-all shadow-lg hover:shadow-eco-500/30\"\r\n                                                >\r\n                                                    Next\r\n                                                </button>\r\n                                            </div>\r\n                                        </div>\r\n                                    </SwiperSlide>\r\n\r\n                                    {/* Step 2: Year selector */}\r\n                                    <SwiperSlide>\r\n                                        <div className=\"transition-all duration-300 ease-out opacity-100 translate-x-0 space-y-6\">\r\n                                            <YearSelector />\r\n                                            <div className=\"flex flex-col gap-2\">\r\n                                                <div className=\"flex justify-between\">\r\n                                                    <button\r\n                                                        type=\"button\"\r\n                                                        onClick={goBack}\r\n                                                        className=\"px-4 py-2 rounded-xl border border-slate-600 text-slate-200 text-xs md:text-sm bg-slate-900/60 hover:bg-slate-800/80 transition-colors\"\r\n                                                    >\r\n                                                        Back\r\n                                                    </button>\r\n                                                    <button\r\n                                                        type=\"button\"\r\n                                                        onClick={() => canProceedPastYearSelect && goNext()}\r\n                                                        disabled={!canProceedPastYearSelect}\r\n                                                        className=\"px-6 py-3 bg-eco-500 hover:bg-eco-400 disabled:bg-slate-700/60 disabled:text-slate-400 rounded-2xl text-xs md:text-sm font-semibold text-slate-900 flex items-center gap-2 transition-all shadow-lg hover:shadow-eco-500/30\"\r\n                                                    >\r\n                                                        Next\r\n                                                    </button>\r\n                                                </div>\r\n                                                {!canProceedPastYearSelect && (\r\n                                                    <p className=\"text-xs text-rose-300\">\r\n                                                        Select at least one year to continue.\r\n                                                    </p>\r\n                                                )}\r\n                                            </div>\r\n                                        </div>\r\n                                    </SwiperSlide>\r\n\r\n                                    {/* Steps 3+: per-year data */}\r\n                                    {sortedYears.length > 0 &&\r\n                                        sortedYears.map((yr, idx) => {\r\n                                            const isLastDataSlide = idx === sortedYears.length - 1;\r\n                                            const entry = values.yearlyData?.[String(yr)];\r\n                                            const entryErrors = (errors?.yearlyData?.[String(yr)] as FormikErrors<YearlyEntry> | undefined);\r\n                                            const entryValid = !!entry && yearEntrySchema.isValidSync(entry) && !(entryErrors && Object.values(entryErrors).some(Boolean));\r\n\r\n                                             return (\r\n                                                 <SwiperSlide key={`year-${yr}`}>\r\n                                                    <div className=\"transition-all duration-300 ease-out opacity-100 translate-x-0 space-y-6\">\r\n                                                        <YearDataForm year={yr} />\r\n                                                        <div className=\"flex flex-col gap-2\">\r\n                                                            <div className=\"flex justify-between\">\r\n                                                                <button\r\n                                                                    type=\"button\"\r\n                                                                    onClick={goBack}\r\n                                                                    className=\"px-4 py-2 rounded-xl border border-slate-600 text-slate-200 text-xs md:text-sm bg-slate-900/60 hover:bg-slate-800/80 transition-colors\"\r\n                                                                >\r\n                                                                    Back\r\n                                                                </button>\r\n                                                                <button\r\n                                                                    type=\"button\"\r\n                                                                    onClick={() => entryValid && goNext()}\r\n                                                                    disabled={!entryValid}\r\n                                                                    className=\"px-6 py-3 bg-eco-500 hover:bg-eco-400 disabled:bg-slate-700/60 disabled:text-slate-400 rounded-2xl text-xs md:text-sm font-semibold text-slate-900 flex items-center gap-2 transition-all shadow-lg hover:shadow-eco-500/30\"\r\n                                                                >\r\n                                                                    <Sparkles size={16} />\r\n                                                                    {isLastDataSlide ? \"Calculate\" : \"Next\"}\r\n                                                                </button>\r\n                                                            </div>\r\n                                                        </div>\r\n                                                    </div>\r\n                                                </SwiperSlide>\r\n                                            );\r\n                                        })}\r\n\r\n                                    {hasYearData && (\r\n                                        <SwiperSlide key=\"year-trends\">\r\n                                            <div className=\"transition-all duration-300 ease-out opacity-100 translate-x-0 space-y-6\">\r\n                                                <YearTrendsChart data={trendData} isSubmitting={isSubmitting} onBack={goBack} />\r\n                                            </div>\r\n                                        </SwiperSlide>\r\n                                    )}\r\n                                 </Swiper>\r\n                             </div>\r\n                         </Form>\r\n                     );\r\n                 }}\r\n             </Formik>\r\n         </div>\r\n     );\r\n }\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ui/app/analysis/page.tsx b/ui/app/analysis/page.tsx
+--- a/ui/app/analysis/page.tsx	(revision ce34cfc41fdd318094653b06261eb03706d619e4)
++++ b/ui/app/analysis/page.tsx	(date 1764470952079)
+@@ -7,33 +7,12 @@
+ import { CountrySelect } from "./CountrySelect";
+ import { YearSelector } from "./YearSelector";
+ import YearDataForm from "./YearDataForm";
++import YearTrendsChart from "./YearTrendsChart";
++import type { FormValues, YearEntry, YearHistoryPoint } from "./types";
+ import { Swiper, SwiperSlide } from "swiper/react";
+ import type { Swiper as SwiperClass } from "swiper";
+ import "swiper/css";
+-import YearTrendsChart from "./YearTrendsChart";
+-
+-interface YearlyEntry {
+-    annualKwh: number | "";
+-    laptops: number | "";
+-    monitors: number | "";
+-    servers: number | "";
+-    cloudCo2: number | "";
+-    fuelPetrol: number | "";
+-    fuelDiesel: number | "";
+-    fuelLpg: number | "";
+-    flightMiles: number | "";
+-}
+ 
+-interface FormValues {
+-    country: string;
+-    annualKwh: number | "";
+-    selectedYears: number[];
+-    yearlyData: Record<string, YearlyEntry>;
+-}
+-
+-type YearEntry = FormValues["yearlyData"][string];
+-
+-// Yup schema for a single year entry
+ const yearEntrySchema = Yup.object({
+     annualKwh: Yup.number()
+         .typeError("Enter a valid number")
+@@ -75,10 +54,6 @@
+ 
+ const validationSchema = Yup.object({
+     country: Yup.string().required("Please select a country"),
+-    annualKwh: Yup.number()
+-        .typeError("Please enter a valid number")
+-        .min(0, "Value must be zero or greater")
+-        .required("Please provide annual electricity consumption"),
+     selectedYears: Yup.array().of(Yup.number()).optional(),
+     yearlyData: Yup.object().test(
+         "valid-years",
+@@ -98,7 +73,6 @@
+ 
+ const INITIAL_VALUES: FormValues = {
+     country: "polska",
+-    annualKwh: "",
+     selectedYears: [],
+     yearlyData: {},
+ };
+@@ -108,6 +82,8 @@
+     const swiperRef = useRef<SwiperClass | null>(null);
+     const sliderRef = useRef<HTMLDivElement>(null);
+     const headerRef = useRef<HTMLDivElement>(null);
++    const [shouldShowChart, setShouldShowChart] = useState(false);
++    const [chartHistory, setChartHistory] = useState<YearHistoryPoint[]>([]);
+ 
+     const scrollToHeader = () => {
+         const el = headerRef.current;
+@@ -128,21 +104,38 @@
+         scrollToHeader();
+     };
+ 
+-    const handleSubmit = (
++    const handleSubmit = async (
+         values: FormValues,
+         helpers: FormikHelpers<FormValues>
+     ) => {
+-        console.log(
+-            "Selected country:",
+-            values.country,
+-            "Annual kWh:",
+-            values.annualKwh,
+-            "Selected years:",
+-            values.selectedYears,
+-            "Yearly data:",
+-            values.yearlyData
+-        );
+         helpers.setSubmitting(false);
++        const history = (values.selectedYears || [])
++            .slice()
++            .sort((a, b) => a - b)
++            .map((year) => {
++                const entry = values.yearlyData?.[String(year)];
++                const toNumber = (val: number | "") => (typeof val === "number" && Number.isFinite(val) ? val : 0);
++                return {
++                    year,
++                    annualKwh: entry ? toNumber(entry.annualKwh) : 0,
++                    laptops: entry ? toNumber(entry.laptops) : 0,
++                    monitors: entry ? toNumber(entry.monitors) : 0,
++                    servers: entry ? toNumber(entry.servers) : 0,
++                    deviceCount: entry ? toNumber(entry.laptops) + toNumber(entry.monitors) + toNumber(entry.servers) : 0,
++                    cloudCo2: entry ? toNumber(entry.cloudCo2) : 0,
++                    flightMiles: entry ? toNumber(entry.flightMiles) : 0,
++                    fuelPetrol: entry ? toNumber(entry.fuelPetrol) : 0,
++                    fuelDiesel: entry ? toNumber(entry.fuelDiesel) : 0,
++                    fuelLpg: entry ? toNumber(entry.fuelLpg) : 0,
++                } as YearHistoryPoint;
++            });
++        setChartHistory(history);
++        setShouldShowChart(history.length > 0);
++        setTimeout(() => {
++            const lastSlideIndex = swiperRef.current ? swiperRef.current.slides.length - 1 : 0;
++            swiperRef.current?.slideTo(lastSlideIndex);
++            scrollToHeader();
++        }, 0);
+     };
+ 
+     const handleNextFromStep0 = async (
+@@ -162,6 +155,16 @@
+         }
+     };
+ 
++    const scrollToSlideTop = () => {
++        sliderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
++    };
++
++    useEffect(() => {
++        scrollToSlideTop();
++    }, [activeStep]);
++
++
++
+     return (
+         <div className="max-w-5xl mx-auto px-6 py-12 pb-24 pt-24">
+             {/* Header */}
+@@ -185,42 +188,30 @@
+             </div>
+ 
+             <Formik<FormValues>
+-                initialValues={INITIAL_VALUES}
+-                validationSchema={validationSchema}
+-                onSubmit={handleSubmit}
+-            >
+-                {({ isSubmitting, validateForm, setFieldTouched, values, errors }) => {
+-                    const sortedYears = (values.selectedYears || [])
+-                        .slice()
+-                        .sort((a, b) => a - b);
+-                    const totalSlides = 2 + sortedYears.length;
+-                    const canProceedPastYearSelect = sortedYears.length > 0;
++                 initialValues={INITIAL_VALUES}
++                 validationSchema={validationSchema}
++                 onSubmit={handleSubmit}
++             >
++                 {({ validateForm, setFieldTouched, values, errors }) => {
++                     const sortedYears = (values.selectedYears || [])
++                         .slice()
++                         .sort((a, b) => a - b);
++                     const totalSlides = 2 + sortedYears.length + (shouldShowChart ? 1 : 0);
++                     const canProceedPastYearSelect = sortedYears.length > 0;
+ 
+-                    const hasYearData = sortedYears.length > 0;
+-                    const totalSlidesWithChart = totalSlides + (hasYearData ? 1 : 0);
+-
+-                    const normalizeValue = (val: number | "") =>
+-                        typeof val === "number" && Number.isFinite(val) ? val : 0;
+-                    const trendData = sortedYears.map((yr) => {
+-                        const entry = values.yearlyData?.[String(yr)];
+-                        return {
+-                            year: yr,
+-                            annualKwh: entry ? normalizeValue(entry.annualKwh) : 0,
+-                            cloudCo2: entry ? normalizeValue(entry.cloudCo2) : 0,
+-                            flightMiles: entry ? normalizeValue(entry.flightMiles) : 0,
+-                            deviceCount: entry
+-                                ? normalizeValue(entry.laptops) + normalizeValue(entry.monitors) + normalizeValue(entry.servers)
+-                                : 0,
+-                        };
+-                    });
++                     const handleYearSlideNext = async (targetYear: number) => {
++                         const validationErrors = await validateForm();
++                         const yearErrors = validationErrors.yearlyData?.[String(targetYear)];
++                         if (!yearErrors || Object.keys(yearErrors).length === 0) {
++                             goNext();
++                         }
++                     };
+ 
+                      return (
+-                        <Form className="space-y-8">
++                         <Form className="space-y-8">
+                             {/* Step indicator */}
+                             <div className="flex items-center gap-3 text-xs text-slate-400">
+-                <span>
+-                  Step {activeStep + 1} of {totalSlidesWithChart}
+-                </span>
++                                <span>Step {activeStep + 1} of {totalSlides}</span>
+                             </div>
+ 
+                             {/* Steps */}
+@@ -294,8 +285,8 @@
+                                         sortedYears.map((yr, idx) => {
+                                             const isLastDataSlide = idx === sortedYears.length - 1;
+                                             const entry = values.yearlyData?.[String(yr)];
+-                                            const entryErrors = (errors?.yearlyData?.[String(yr)] as FormikErrors<YearlyEntry> | undefined);
+-                                            const entryValid = !!entry && yearEntrySchema.isValidSync(entry) && !(entryErrors && Object.values(entryErrors).some(Boolean));
++                                            const entryErrors = errors?.yearlyData?.[String(yr)] as FormikErrors<YearEntry> | undefined;
++                                            const entryHasErrors = Boolean(entryErrors && Object.values(entryErrors).some(Boolean));
+ 
+                                              return (
+                                                  <SwiperSlide key={`year-${yr}`}>
+@@ -311,14 +302,18 @@
+                                                                     Back
+                                                                 </button>
+                                                                 <button
+-                                                                    type="button"
+-                                                                    onClick={() => entryValid && goNext()}
+-                                                                    disabled={!entryValid}
++                                                                    type={isLastDataSlide ? "submit" : "button"}
++                                                                    onClick={() => {
++                                                                        if (!isLastDataSlide) {
++                                                                            handleYearSlideNext(yr);
++                                                                        }
++                                                                    }}
++                                                                    disabled={!entry || entryHasErrors}
+                                                                     className="px-6 py-3 bg-eco-500 hover:bg-eco-400 disabled:bg-slate-700/60 disabled:text-slate-400 rounded-2xl text-xs md:text-sm font-semibold text-slate-900 flex items-center gap-2 transition-all shadow-lg hover:shadow-eco-500/30"
+                                                                 >
+-                                                                    <Sparkles size={16} />
+-                                                                    {isLastDataSlide ? "Calculate" : "Next"}
+-                                                                </button>
++                                                                     <Sparkles size={16} />
++                                                                     {isLastDataSlide ? "Calculate" : "Next"}
++                                                                 </button>
+                                                             </div>
+                                                         </div>
+                                                     </div>
+@@ -326,15 +321,20 @@
+                                             );
+                                         })}
+ 
+-                                    {hasYearData && (
+-                                        <SwiperSlide key="year-trends">
+-                                            <div className="transition-all duration-300 ease-out opacity-100 translate-x-0 space-y-6">
+-                                                <YearTrendsChart data={trendData} isSubmitting={isSubmitting} onBack={goBack} />
+-                                            </div>
+-                                        </SwiperSlide>
+-                                    )}
+-                                 </Swiper>
+-                             </div>
++                                    {/* Chart Slide */}
++                                    {shouldShowChart && chartHistory.length > 0 && (
++                                         <SwiperSlide>
++                                             <div className="transition-all duration-300 ease-out space-y-6">
++                                                 <YearTrendsChart
++                                                     historyData={chartHistory}
++                                                     onBack={goBack}
++                                                 />
++                                             </div>
++                                         </SwiperSlide>
++                                     )}
++                                  </Swiper>
++                              </div>
++
+                          </Form>
+                      );
+                  }}
+Index: ui/app/analysis/YearTrendsChart.tsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import { Sparkles } from \"lucide-react\";\r\nimport {\r\n  ResponsiveContainer,\r\n  LineChart,\r\n  Line,\r\n  XAxis,\r\n  YAxis,\r\n  Tooltip,\r\n  Legend,\r\n  CartesianGrid,\r\n} from \"recharts\";\r\n\r\ninterface TrendPoint {\r\n  year: number;\r\n  annualKwh: number;\r\n  cloudCo2: number;\r\n  flightMiles: number;\r\n  deviceCount: number;\r\n}\r\n\r\ninterface YearTrendsChartProps {\r\n  data: TrendPoint[];\r\n  isSubmitting: boolean;\r\n  onBack: () => void;\r\n}\r\n\r\nconst YearTrendsChart: React.FC<YearTrendsChartProps> = ({ data, isSubmitting, onBack }) => {\r\n  return (\r\n    <div className=\"rounded-3xl border border-white/10 bg-slate-950/60 p-6 shadow-[0_25px_75px_rgba(2,6,23,0.6)]\">\r\n      <p className=\"text-xs text-slate-400 uppercase tracking-[0.3em]\">Trends overview</p>\r\n      <h3 className=\"mt-2 text-2xl font-semibold text-white\">Year-on-year evolution</h3>\r\n      <p className=\"text-sm text-slate-400\">See how electricity, devices, cloud emissions, and travel changed across the selected years.</p>\r\n\r\n      <div className=\"mt-6 h-72\">\r\n        <ResponsiveContainer width=\"100%\" height=\"100%\">\r\n          <LineChart data={data} margin={{ top: 5, right: 10, left: -16, bottom: 5 }}>\r\n            <CartesianGrid strokeDasharray=\"3 3\" stroke=\"rgba(148,163,184,0.35)\" />\r\n            <XAxis dataKey=\"year\" tick={{ fill: \"#94a3b8\" }} />\r\n            <YAxis tick={{ fill: \"#94a3b8\" }} />\r\n            <Tooltip contentStyle={{ background: \"#0f172a\", borderColor: \"#334155\" }} labelFormatter={(label) => `Year ${label}`} />\r\n            <Legend wrapperStyle={{ color: \"#94a3b8\" }} />\r\n            <Line type=\"monotone\" dataKey=\"annualKwh\" stroke=\"#22c55e\" name=\"Electricity (kWh)\" strokeWidth={2} dot={false} />\r\n            <Line type=\"monotone\" dataKey=\"deviceCount\" stroke=\"#f97316\" name=\"Device additions\" strokeWidth={2} dot={false} />\r\n            <Line type=\"monotone\" dataKey=\"cloudCo2\" stroke=\"#38bdf8\" name=\"Cloud CO₂ (kg)\" strokeWidth={2} dot={false} />\r\n            <Line type=\"monotone\" dataKey=\"flightMiles\" stroke=\"#a855f7\" name=\"Flight miles\" strokeWidth={2} dot={false} />\r\n          </LineChart>\r\n        </ResponsiveContainer>\r\n      </div>\r\n\r\n      <div className=\"mt-6 flex justify-between\">\r\n        <button\r\n          type=\"button\"\r\n          onClick={onBack}\r\n          className=\"px-4 py-2 rounded-xl border border-slate-600 text-slate-200 text-xs md:text-sm bg-slate-900/60 hover:bg-slate-800/80 transition-colors\"\r\n        >\r\n          Back\r\n        </button>\r\n        <button\r\n          type=\"submit\"\r\n          disabled={isSubmitting}\r\n          className=\"px-8 py-3 bg-eco-500 hover:bg-eco-400 disabled:bg-slate-500 rounded-2xl text-xs md:text-sm font-semibold text-slate-900 flex items-center gap-2 transition-all shadow-lg hover:shadow-eco-500/30\"\r\n        >\r\n          <Sparkles size={16} />\r\n          {isSubmitting ? \"Calculating...\" : \"Calculate\"}\r\n        </button>\r\n      </div>\r\n    </div>\r\n  );\r\n};\r\n\r\nexport default YearTrendsChart;\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ui/app/analysis/YearTrendsChart.tsx b/ui/app/analysis/YearTrendsChart.tsx
+--- a/ui/app/analysis/YearTrendsChart.tsx	(revision ce34cfc41fdd318094653b06261eb03706d619e4)
++++ b/ui/app/analysis/YearTrendsChart.tsx	(date 1764472907416)
+@@ -1,72 +1,202 @@
+-import { Sparkles } from "lucide-react";
+-import {
+-  ResponsiveContainer,
+-  LineChart,
+-  Line,
+-  XAxis,
+-  YAxis,
+-  Tooltip,
+-  Legend,
+-  CartesianGrid,
+-} from "recharts";
++import {ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid} from "recharts";
++import {useMemo, useState, useEffect, useCallback} from "react";
++import type {YearHistoryPoint} from "./types";
++import {fetchTrendsForecast} from "../../functions/trendsApi";
+ 
+-interface TrendPoint {
+-  year: number;
+-  annualKwh: number;
+-  cloudCo2: number;
+-  flightMiles: number;
+-  deviceCount: number;
++interface MetricToggle {
++    key: keyof YearHistoryPoint;
++    label: string;
++    color: string;
+ }
+ 
+ interface YearTrendsChartProps {
+-  data: TrendPoint[];
+-  isSubmitting: boolean;
+-  onBack: () => void;
++    historyData: YearHistoryPoint[];
++    onBack: () => void;
+ }
+ 
+-const YearTrendsChart: React.FC<YearTrendsChartProps> = ({ data, isSubmitting, onBack }) => {
+-  return (
+-    <div className="rounded-3xl border border-white/10 bg-slate-950/60 p-6 shadow-[0_25px_75px_rgba(2,6,23,0.6)]">
+-      <p className="text-xs text-slate-400 uppercase tracking-[0.3em]">Trends overview</p>
+-      <h3 className="mt-2 text-2xl font-semibold text-white">Year-on-year evolution</h3>
+-      <p className="text-sm text-slate-400">See how electricity, devices, cloud emissions, and travel changed across the selected years.</p>
++const YearTrendsChart: React.FC<YearTrendsChartProps> = ({historyData, onBack}) => {
++    const metrics: MetricToggle[] = useMemo(
++        () => [
++            {key: "annualKwh", label: "Electricity (kWh)", color: "#22c55e"},
++            {key: "deviceCount", label: "Devices", color: "#f97316"},
++            {key: "laptops", label: "Laptops", color: "#60a5fa"},
++            {key: "monitors", label: "Monitors", color: "#34d399"},
++            {key: "servers", label: "Servers", color: "#f472b6"},
++            {key: "cloudCo2", label: "Cloud CO₂", color: "#38bdf8"},
++            {key: "flightMiles", label: "Flight miles", color: "#a855f7"},
++            {key: "fuelPetrol", label: "Petrol (L)", color: "#fb7185"},
++            {key: "fuelDiesel", label: "Diesel (L)", color: "#eab308"},
++            {key: "fuelLpg", label: "LPG (L)", color: "#2dd4bf"},
++        ],
++        []
++    );
++
++    const [enabledSeries, setEnabledSeries] = useState<Record<string, boolean>>(() =>
++        metrics.reduce((acc, metric) => {
++            acc[metric.key] = true;
++            return acc;
++        }, {} as Record<string, boolean>)
++    );
++    const [forecastData, setForecastData] = useState<YearHistoryPoint[]>([]);
++    const [predicting, setPredicting] = useState(false);
++
++    const predictSeries = useCallback(async (): Promise<YearHistoryPoint[]> => {
++        if (historyData.length < 2) {
++            return [];
++        }
++
++        const stepsAhead = 3;
++        const payload = await Promise.all(
++            metrics.map(async (metric) => {
++                const response = await fetchTrendsForecast({
++                    years: historyData.map((d) => d.year),
++                    values: historyData.map((d) => d[metric.key] as number),
++                    stepsAhead,
++                    model: "linear",
++                });
++                return {
++                    key: metric.key,
++                    forecast: response.forecast.map((point) => {
++                        const raw = point.predicted_value ?? 0;
++                        if (!Number.isFinite(raw) || raw < 0) {
++                            return 0;
++                        }
++                        return Math.ceil(raw);
++                    }),
++                };
++            })
++        );
++
++        const baseYear = historyData[historyData.length - 1]?.year ?? new Date().getFullYear();
++        return Array.from({length: stepsAhead}).map((_, idx) => {
++            const futureYear = baseYear + idx + 1;
++            const next: Partial<YearHistoryPoint> = {year: futureYear};
++            for (const item of payload) {
++                next[item.key] = item.forecast[idx] ?? 0;
++            }
++            return next as YearHistoryPoint;
++        });
++    }, [historyData, metrics]);
++
++    useEffect(() => {
++        let cancel = false;
++
++        const runPrediction = async () => {
++            if (historyData.length < 2) {
++                setForecastData([]);
++                return;
++            }
++
++            setPredicting(true);
++            try {
++                const nextPoints = await predictSeries();
++                console.log(nextPoints);
++                if (!cancel) {
++                    setForecastData(nextPoints);
++                }
++            } catch (error) {
++                console.error("Prediction failed", error);
++                if (!cancel) {
++                    setForecastData([]);
++                }
++            } finally {
++                if (!cancel) {
++                    setPredicting(false);
++                }
++            }
++        };
++
++        runPrediction();
++        return () => {
++            cancel = true;
++        };
++    }, [historyData, predictSeries]);
++
++    const toggleSeries = (key: keyof YearHistoryPoint) => {
++        setEnabledSeries((prev) => ({...prev, [key]: !prev[key]}));
++    };
++
++    return (
++        <div className="rounded-3xl border border-white/10 bg-slate-950/60 p-6 shadow-[0_25px_75px_rgba(2,6,23,0.6)]">
++            <p className="text-xs text-slate-400 uppercase tracking-[0.3em]">Trends overview</p>
++            <h3 className="mt-2 text-2xl font-semibold text-white">Year-on-year evolution</h3>
++            <p className="text-sm text-slate-400">Historical hardware growth, cloud CO₂, flights, and fleet fuel
++                burn.</p>
++
++            <div className="mt-4 flex flex-wrap gap-2">
++                {metrics.map((metric) => (
++                    <button
++                        key={metric.key}
++                        type="button"
++                        onClick={() => toggleSeries(metric.key)}
++                        className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
++                            enabledSeries[metric.key]
++                                ? "bg-white/10 border-white/30 text-white"
++                                : "bg-transparent border-white/10 text-white/50"
++                        }`}
++                    >
++            <span
++                className="mr-2 inline-block h-2 w-2 rounded-full"
++                style={{backgroundColor: metric.color}}
++            />
++                        {metric.label}
++                    </button>
++                ))}
++            </div>
+ 
+-      <div className="mt-6 h-72">
+-        <ResponsiveContainer width="100%" height="100%">
+-          <LineChart data={data} margin={{ top: 5, right: 10, left: -16, bottom: 5 }}>
+-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.35)" />
+-            <XAxis dataKey="year" tick={{ fill: "#94a3b8" }} />
+-            <YAxis tick={{ fill: "#94a3b8" }} />
+-            <Tooltip contentStyle={{ background: "#0f172a", borderColor: "#334155" }} labelFormatter={(label) => `Year ${label}`} />
+-            <Legend wrapperStyle={{ color: "#94a3b8" }} />
+-            <Line type="monotone" dataKey="annualKwh" stroke="#22c55e" name="Electricity (kWh)" strokeWidth={2} dot={false} />
+-            <Line type="monotone" dataKey="deviceCount" stroke="#f97316" name="Device additions" strokeWidth={2} dot={false} />
+-            <Line type="monotone" dataKey="cloudCo2" stroke="#38bdf8" name="Cloud CO₂ (kg)" strokeWidth={2} dot={false} />
+-            <Line type="monotone" dataKey="flightMiles" stroke="#a855f7" name="Flight miles" strokeWidth={2} dot={false} />
+-          </LineChart>
+-        </ResponsiveContainer>
+-      </div>
++            <div className="mt-6 h-72">
++                {historyData.length === 0 ? (
++                    <div className="flex h-full items-center justify-center text-xs text-slate-400">
++                        Provide at least one year of data to render the chart.
++                    </div>
++                ) : (
++                    <div className="relative h-full">
++                        {predicting && (
++                            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-slate-950/80 text-xs text-slate-200">
++                                Generating forecast…
++                            </div>
++                        )}
++                        <ResponsiveContainer width="100%" height="100%">
++                            <LineChart data={[...historyData, ...forecastData]} margin={{top: 5, right: 12, left: -20, bottom: 5}}>
++                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.35)"/>
++                                <XAxis dataKey="year" tick={{fill: "#94a3b8"}}/>
++                                <YAxis tick={{fill: "#94a3b8"}}/>
++                                <Tooltip
++                                    contentStyle={{background: "#0f172a", borderColor: "#334155"}}
++                                    labelFormatter={(label) => `Year ${label}`}
++                                />
++                                <Legend wrapperStyle={{color: "#94a3b8"}}/>
++                                {metrics.map((metric) =>
++                                    enabledSeries[metric.key] ? (
++                                        <Line
++                                            key={metric.key}
++                                            type="monotone"
++                                            dataKey={metric.key}
++                                            stroke={metric.color}
++                                            name={metric.label}
++                                            strokeWidth={2}
++                                            dot={false}
++                                        />
++                                    ) : null
++                                )}
++
++                            </LineChart>
++                        </ResponsiveContainer>
++                    </div>
++                )}
++            </div>
+ 
+-      <div className="mt-6 flex justify-between">
+-        <button
+-          type="button"
+-          onClick={onBack}
+-          className="px-4 py-2 rounded-xl border border-slate-600 text-slate-200 text-xs md:text-sm bg-slate-900/60 hover:bg-slate-800/80 transition-colors"
+-        >
+-          Back
+-        </button>
+-        <button
+-          type="submit"
+-          disabled={isSubmitting}
+-          className="px-8 py-3 bg-eco-500 hover:bg-eco-400 disabled:bg-slate-500 rounded-2xl text-xs md:text-sm font-semibold text-slate-900 flex items-center gap-2 transition-all shadow-lg hover:shadow-eco-500/30"
+-        >
+-          <Sparkles size={16} />
+-          {isSubmitting ? "Calculating..." : "Calculate"}
+-        </button>
+-      </div>
+-    </div>
+-  );
++            <div className="mt-6 flex justify-between">
++                <button
++                    type="button"
++                    onClick={onBack}
++                    className="px-4 py-2 rounded-xl border border-slate-600 text-slate-200 text-xs md:text-sm bg-slate-900/60 hover:bg-slate-800/80 transition-colors"
++                >
++                    Back
++                </button>
++            </div>
++        </div>
++    );
+ };
+ 
+ export default YearTrendsChart;
+-
+Index: ui/app/logo/page.tsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ui/app/logo/page.tsx b/ui/app/logo/page.tsx
+new file mode 100644
+--- /dev/null	(date 1764468948713)
++++ b/ui/app/logo/page.tsx	(date 1764468948713)
+@@ -0,0 +1,8 @@
++import Logo from '@/components/Logo'
++export default function Logog(){
++    return (
++        <div className="w-screen h-screen flex items-center justify-center">
++            <Logo />
++        </div>
++    )
++}
+\ No newline at end of file
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"74e408c7-1b40-4028-b7c5-ef3179086a3b\" name=\"Changes\" comment=\"\">\r\n      <change afterPath=\"$PROJECT_DIR$/api-future-trends-for-company/.gitignore\" afterDir=\"false\" />\r\n      <change afterPath=\"$PROJECT_DIR$/api-future-trends-for-company/app.py\" afterDir=\"false\" />\r\n      <change afterPath=\"$PROJECT_DIR$/ui/app/analysis/YearDataForm.tsx\" afterDir=\"false\" />\r\n      <change afterPath=\"$PROJECT_DIR$/ui/app/analysis/YearSelector.tsx\" afterDir=\"false\" />\r\n      <change afterPath=\"$PROJECT_DIR$/ui/app/analysis/YearTrendsChart.tsx\" afterDir=\"false\" />\r\n      <change afterPath=\"$PROJECT_DIR$/ui/functions/trendsApi.ts\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/ui/app/analysis/CountrySelect.tsx\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/ui/app/analysis/CountrySelect.tsx\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/ui/app/analysis/page.tsx\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/ui/app/analysis/page.tsx\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/ui/package-lock.json\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/ui/package-lock.json\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/ui/package.json\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/ui/package.json\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"FileTemplateManagerImpl\">\r\n    <option name=\"RECENT_TEMPLATES\">\r\n      <list>\r\n        <option value=\"TypeScript JSX File\" />\r\n        <option value=\"TypeScript File\" />\r\n      </list>\r\n    </option>\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"GitHubPullRequestSearchHistory\">{\r\n  &quot;lastFilter&quot;: {\r\n    &quot;state&quot;: &quot;OPEN&quot;,\r\n    &quot;assignee&quot;: &quot;P4tkry&quot;\r\n  }\r\n}</component>\r\n  <component name=\"GithubPullRequestsUISettings\">{\r\n  &quot;selectedUrlAndAccountId&quot;: {\r\n    &quot;url&quot;: &quot;https://github.com/cherry-juice-hacathon/ecoai.git&quot;,\r\n    &quot;accountId&quot;: &quot;2c6a59b3-fb36-44db-a768-70f712fac4e4&quot;\r\n  }\r\n}</component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;associatedIndex&quot;: 2\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"36A15rAl59Jh4KsygHigCaQIRJy\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\">{\r\n  &quot;keyToString&quot;: {\r\n    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,\r\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\r\n    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,\r\n    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,\r\n    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,\r\n    &quot;git-widget-placeholder&quot;: &quot;master&quot;,\r\n    &quot;js.debugger.nextJs.config.created.client&quot;: &quot;true&quot;,\r\n    &quot;js.debugger.nextJs.config.created.server&quot;: &quot;true&quot;,\r\n    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,\r\n    &quot;last_opened_file_path&quot;: &quot;C:/projects/co2misson&quot;,\r\n    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,\r\n    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,\r\n    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,\r\n    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,\r\n    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,\r\n    &quot;npm.Next.js: server-side.executor&quot;: &quot;Run&quot;,\r\n    &quot;npm.dev.executor&quot;: &quot;Run&quot;,\r\n    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,\r\n    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,\r\n    &quot;ts.external.directory.path&quot;: &quot;C:\\\\Program Files\\\\JetBrains\\\\WebStorm 2025.2.5\\\\plugins\\\\javascript-plugin\\\\jsLanguageServicesImpl\\\\external&quot;,\r\n    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;\r\n  }\r\n}</component>\r\n  <component name=\"RecentsManager\">\r\n    <key name=\"MoveFile.RECENT_KEYS\">\r\n      <recent name=\"C:\\projects\\co2misson\\ui\" />\r\n    </key>\r\n  </component>\r\n  <component name=\"RunManager\" selected=\"npm.dev\">\r\n    <configuration name=\"Next.js: debug client-side\" type=\"JavascriptDebugType\" uri=\"http://localhost:3000/\">\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <configuration name=\"Next.js: server-side\" type=\"js.build_tools.npm\">\r\n      <package-json value=\"$PROJECT_DIR$/package.json\" />\r\n      <command value=\"run\" />\r\n      <scripts>\r\n        <script value=\"dev\" />\r\n      </scripts>\r\n      <node-interpreter value=\"project\" />\r\n      <envs />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <configuration name=\"dev\" type=\"js.build_tools.npm\" temporary=\"true\" nameIsGenerated=\"true\">\r\n      <package-json value=\"$PROJECT_DIR$/ui/package.json\" />\r\n      <command value=\"run\" />\r\n      <scripts>\r\n        <script value=\"dev\" />\r\n      </scripts>\r\n      <node-interpreter value=\"project\" />\r\n      <envs />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <recent_temporary>\r\n      <list>\r\n        <item itemvalue=\"npm.dev\" />\r\n      </list>\r\n    </recent_temporary>\r\n  </component>\r\n  <component name=\"SharedIndexes\">\r\n    <attachedChunks>\r\n      <set>\r\n        <option value=\"bundled-js-predefined-d6986cc7102b-a71380e98a7c-JavaScript-WS-252.28238.10\" />\r\n      </set>\r\n    </attachedChunks>\r\n  </component>\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"74e408c7-1b40-4028-b7c5-ef3179086a3b\" name=\"Changes\" comment=\"\" />\r\n      <created>1764434381947</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1764434381947</updated>\r\n      <workItem from=\"1764434383499\" duration=\"9825000\" />\r\n      <workItem from=\"1764449419833\" duration=\"9931000\" />\r\n      <workItem from=\"1764460150956\" duration=\"3592000\" />\r\n    </task>\r\n    <servers />\r\n  </component>\r\n  <component name=\"TypeScriptGeneratedFilesManager\">\r\n    <option name=\"version\" value=\"3\" />\r\n  </component>\r\n  <component name=\"github-copilot-workspace\">\r\n    <instructionFileLocations>\r\n      <option value=\".github/instructions\" />\r\n    </instructionFileLocations>\r\n    <promptFileLocations>\r\n      <option value=\".github/prompts\" />\r\n    </promptFileLocations>\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision ce34cfc41fdd318094653b06261eb03706d619e4)
++++ b/.idea/workspace.xml	(date 1764472907458)
+@@ -5,17 +5,13 @@
+   </component>
+   <component name="ChangeListManager">
+     <list default="true" id="74e408c7-1b40-4028-b7c5-ef3179086a3b" name="Changes" comment="">
+-      <change afterPath="$PROJECT_DIR$/api-future-trends-for-company/.gitignore" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/api-future-trends-for-company/app.py" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/ui/app/analysis/YearDataForm.tsx" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/ui/app/analysis/YearSelector.tsx" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/ui/app/analysis/YearTrendsChart.tsx" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/ui/functions/trendsApi.ts" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/ui/app/analysis/types.ts" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/ui/app/logo/page.tsx" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/ui/app/analysis/CountrySelect.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/ui/app/analysis/CountrySelect.tsx" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/ui/app/analysis/YearDataForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/ui/app/analysis/YearDataForm.tsx" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/ui/app/analysis/YearTrendsChart.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/ui/app/analysis/YearTrendsChart.tsx" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/ui/app/analysis/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/ui/app/analysis/page.tsx" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/ui/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/package-lock.json" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/ui/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/package.json" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/ui/functions/trendsApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/functions/trendsApi.ts" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -129,7 +125,7 @@
+       <updated>1764434381947</updated>
+       <workItem from="1764434383499" duration="9825000" />
+       <workItem from="1764449419833" duration="9931000" />
+-      <workItem from="1764460150956" duration="3592000" />
++      <workItem from="1764460150956" duration="10842000" />
+     </task>
+     <servers />
+   </component>
+Index: ui/app/analysis/types.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ui/app/analysis/types.ts b/ui/app/analysis/types.ts
+new file mode 100644
+--- /dev/null	(date 1764470661927)
++++ b/ui/app/analysis/types.ts	(date 1764470661927)
+@@ -0,0 +1,33 @@
++export interface YearlyEntry {
++    annualKwh: number | "";
++    laptops: number | "";
++    monitors: number | "";
++    servers: number | "";
++    cloudCo2: number | "";
++    fuelPetrol: number | "";
++    fuelDiesel: number | "";
++    fuelLpg: number | "";
++    flightMiles: number | "";
++}
++
++export interface FormValues {
++    country: string;
++    selectedYears: number[];
++    yearlyData: Record<string, YearlyEntry>;
++}
++
++export type YearEntry = FormValues["yearlyData"][string];
++
++export interface YearHistoryPoint {
++    year: number;
++    annualKwh: number;
++    laptops: number;
++    monitors: number;
++    servers: number;
++    deviceCount: number;
++    cloudCo2: number;
++    flightMiles: number;
++    fuelPetrol: number;
++    fuelDiesel: number;
++    fuelLpg: number;
++}
