@@ -5,29 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="74e408c7-1b40-4028-b7c5-ef3179086a3b" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/api-future-trends-for-company/Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/api-future-trends-for-company/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/api-future-trends-for-company/requirements.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/app/analysis/CsvUploader.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/app/analysis/EcoAdvisorPanel.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/app/analysis/types.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/app/api/eco-advisor/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/app/logo/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/functions/co2Api.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/api/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/footprint.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/footprint.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/app/analysis/CountrySelect.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/ui/app/analysis/CountrySelect.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/app/analysis/YearDataForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/ui/app/analysis/YearDataForm.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/app/analysis/YearSelector.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/ui/app/analysis/YearSelector.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/app/analysis/YearTrendsChart.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/ui/app/analysis/YearTrendsChart.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/app/analysis/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/ui/app/analysis/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/functions/trendsApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/functions/trendsApi.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,6 +22,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="szymongotuje" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -143,9 +127,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="npm.dev" />
+        <item itemvalue="Docker.api/Dockerfile (1)" />
+        <item itemvalue="Docker.api/Dockerfile" />
         <item itemvalue="Docker.api/Dockerfile" />
         <item itemvalue="Docker.api/Dockerfile (1)" />
-        <item itemvalue="npm.dev" />
       </list>
     </recent_temporary>
   </component>
@@ -165,7 +151,7 @@
       <updated>1764434381947</updated>
       <workItem from="1764434383499" duration="9825000" />
       <workItem from="1764449419833" duration="9931000" />
-      <workItem from="1764460150956" duration="24811000" />
+      <workItem from="1764460150956" duration="26802000" />
     </task>
     <servers />
   </component>
