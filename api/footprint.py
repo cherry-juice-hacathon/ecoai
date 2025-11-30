@@ -1,8 +1,17 @@
 from flask import Flask, request, jsonify
 import pandas as pd
-from sklearn.linear_model import LinearRegression
 import numpy as np
 import os
+import warnings
+
+# Modele
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tools.sm_exceptions import ConvergenceWarning
+
+warnings.filterwarnings("ignore", category=ConvergenceWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 
 app = Flask(__name__)
 
@@ -28,55 +37,67 @@ def load_data():
 
 load_data()
 
-# --- 2. FUNKCJE OBLICZENIOWE I AI ---
+# --- 2. MULTI-MODEL PREDICTION ENGINE ---
 
-def predict_value_with_regression(df, region_col, region_name, year_col, target_value_col, target_year):
-    """Silnik AI do predykcji współczynników emisji"""
+def predict_value_smart(df, region_col, region_name, year_col, target_value_col, target_year, model_type='linear'):
+    """Inteligentna predykcja: Linear, Poly, ARIMA"""
     if df is None: return 0.0
-    subset = df[df[region_col] == region_name]
-    if subset.empty or len(subset) < 1: return 0.0
+    subset = df[df[region_col] == region_name].copy()
     subset = subset.dropna(subset=[target_value_col])
-    if subset.empty: return 0.0
+    subset = subset.sort_values(by=year_col)
+    
+    if subset.empty or len(subset) < 2: return 0.0
 
     X = subset[[year_col]].values
     y = subset[target_value_col].values
+    data_points_count = len(y)
 
-    model = LinearRegression()
-    model.fit(X, y)
-    prediction = model.predict(np.array([[target_year]]))[0]
-    return max(0.0, prediction)
+    # Fallback dla ARIMA
+    if model_type == 'arima' and data_points_count < 8:
+        model_type = 'linear'
 
+    try:
+        if model_type == 'linear':
+            model = LinearRegression()
+            model.fit(X, y)
+            prediction = model.predict(np.array([[target_year]]))[0]
+
+        elif model_type == 'poly':
+            poly = PolynomialFeatures(degree=2)
+            X_poly = poly.fit_transform(X)
+            model = LinearRegression()
+            model.fit(X_poly, y)
+            target_X_poly = poly.transform([[target_year]])
+            prediction = model.predict(target_X_poly)[0]
+
+        elif model_type == 'arima':
+            last_year = subset[year_col].max()
+            steps_ahead = target_year - last_year
+            if steps_ahead <= 0:
+                return predict_value_smart(df, region_col, region_name, year_col, target_value_col, target_year, 'linear')
+            
+            model = ARIMA(y, order=(1, 1, 1)) 
+            model_fit = model.fit()
+            forecast = model_fit.forecast(steps=steps_ahead)
+            prediction = forecast[-1]
+        else:
+            return 0.0
+
+    except Exception:
+        return predict_value_smart(df, region_col, region_name, year_col, target_value_col, target_year, 'linear')
+
+    return max(0.0, float(prediction))
+
+
+# --- FUNKCJA POMOCNICZA (Tylko paliwo) ---
 def calculate_fuel_emission(fuel_type, consumption):
-    """Obliczanie emisji z transportu (Scope 1)"""
     if not fuel_type or not consumption: return 0.0
     fuel_type = str(fuel_type).capitalize()
-    
     if fuel_type == "Benzyna": return round(2.31 * consumption, 2)
     elif fuel_type == "Diesel": return round(2.68 * consumption, 2)
     elif fuel_type == "LPG": return round(1.51 * consumption, 2)
     else: return 0.0
 
-def calculate_cloud_emission(provider, kwh_usage):
-    """
-    NOWA FUNKCJA: Obliczanie emisji z chmury obliczeniowej (Scope 3).
-    Współczynniki są przybliżonymi średnimi rynkowymi (kg CO2 / kWh).
-    """
-    if not provider or not kwh_usage:
-        return 0.0
-    
-    provider = str(provider).lower()
-    
-    # Przykładowe współczynniki (można je doprecyzować w zależności od regionu Data Center)
-    if "google" in provider or "gcp" in provider:
-        # Google chwali się zerową emisją netto (matching 100% renewable), ale realnie:
-        return round(0.05 * kwh_usage, 2) 
-    elif "azure" in provider or "microsoft" in provider:
-        return round(0.30 * kwh_usage, 2)
-    elif "aws" in provider or "amazon" in provider:
-        return round(0.35 * kwh_usage, 2)
-    else:
-        # Domyślny, generyczny hosting
-        return round(0.45 * kwh_usage, 2)
 
 # --- 3. ENDPOINT GŁÓWNY ---
 
@@ -84,81 +105,69 @@ def calculate_cloud_emission(provider, kwh_usage):
 def calculate_total_footprint():
     data = request.get_json()
     
-    # 1. Dane podstawowe
+    # Parametry ogólne
     country = data.get('country', 'Poland')
     year = data.get('year', 2024)
-    
-    # 2. Scope 2: Energia elektryczna (biuro/serwerownia lokalna)
+    model_choice = data.get('model', 'linear')
+    if model_choice not in ['linear', 'poly', 'arima']: model_choice = 'linear'
+
+    # Dane wejściowe
     energy_kwh = data.get('energy_kwh', 0)
-    
-    # 3. Scope 3: Hardware (Produkcja)
     laptops_count = data.get('laptops_count', 0)
     monitors_count = data.get('monitors_count', 0)
     servers_count = data.get('servers_count', 0)
     
-    # 4. Scope 1: Transport
     fuel_type = data.get('fuel_type', None)       
     fuel_liters = data.get('fuel_consumption', 0) 
     
-    # 5. Scope 3: Cloud Computing (NOWE)
-    cloud_provider = data.get('cloud_provider', None) # np. "AWS", "Azure"
-    cloud_kwh = data.get('cloud_kwh', 0)              # Zużycie energii w chmurze
+    # --- ZMIANA TUTAJ: Bezpośrednia wartość emisji z chmury ---
+    cloud_emission_kg = data.get('cloud_emission', 0)
 
     # --- OBLICZENIA ---
-    
-    # A. Energia lokalna
-    energy_factor = predict_value_with_regression(
-        df=datasets.get('energy'),
-        region_col='Entity',
-        region_name=country,
-        year_col='Year',
-        target_value_col='factor',
-        target_year=year
-    )
+    def get_pred(df, target_col):
+        return predict_value_smart(df, 'Entity' if 'Entity' in df.columns else 'Region', 
+                                   country, 'Year', target_col, year, model_choice)
+
+    # A. Energia (Scope 2)
+    energy_factor = get_pred(datasets.get('energy'), 'factor')
     energy_footprint = energy_kwh * energy_factor
 
-    # B. Sprzęt (Produkcja)
-    lap_prod = laptops_count * predict_value_with_regression(datasets.get('hardware'), 'Region', country, 'Year', 'Laptop_Production', year)
-    mon_prod = monitors_count * predict_value_with_regression(datasets.get('hardware'), 'Region', country, 'Year', 'Monitor_Production', year)
-    serv_prod = servers_count * predict_value_with_regression(datasets.get('servers'), 'Region', country, 'Year', 'Server_Production', year)
+    # B. Sprzęt (Scope 3 - Embodied)
+    lap_prod = laptops_count * get_pred(datasets.get('hardware'), 'Laptop_Production')
+    mon_prod = monitors_count * get_pred(datasets.get('hardware'), 'Monitor_Production')
+    serv_prod = servers_count * get_pred(datasets.get('servers'), 'Server_Production')
     total_hardware = lap_prod + mon_prod + serv_prod
 
-    # C. Transport
+    # C. Transport (Scope 1)
     transport_footprint = calculate_fuel_emission(fuel_type, fuel_liters)
-    
-    # D. Cloud (NOWE)
-    cloud_footprint = calculate_cloud_emission(cloud_provider, cloud_kwh)
 
-    # --- SUMA ---
-    total_footprint = energy_footprint + total_hardware + transport_footprint + cloud_footprint
+    # D. Suma (dodajemy cloud_emission_kg bezpośrednio)
+    total_footprint = energy_footprint + total_hardware + transport_footprint + cloud_emission_kg
 
     return jsonify({
         "rok_kalkulacji": year,
         "kraj": country,
+        "model_ai": model_choice,
         "szczegoly": {
             "energia_lokalna": {
-                "opis": "Prąd w biurze (Scope 2)",
                 "zuzycie_kwh": energy_kwh,
+                "prognozowany_wspolczynnik": round(energy_factor, 4),
                 "emisja_kg": round(energy_footprint, 2)
             },
             "chmura": {
-                "opis": "Zasoby Cloud (Scope 3)",
-                "dostawca": cloud_provider if cloud_provider else "Brak",
-                "zuzycie_cloud_kwh": cloud_kwh,
-                "emisja_kg": round(cloud_footprint, 2)
+                "opis": "Zadeklarowana emisja od dostawcy (Scope 3)",
+                "emisja_kg": round(cloud_emission_kg, 2)
             },
             "sprzet_produkcja": {
-                "opis": "Produkcja sprzętu (Scope 3)",
                 "suma_sprzet_kg": round(total_hardware, 2)
             },
             "transport": {
-                "opis": "Flota samochodowa (Scope 1)",
                 "paliwo": fuel_type,
                 "emisja_kg": transport_footprint
             }
         },
         "WYNIK_KONCOWY": {
-            "TOTAL_FOOTPRINT_KG": round(total_footprint, 2)
+            "TOTAL_FOOTPRINT_KG": round(total_footprint, 2),
         }
     })
 
