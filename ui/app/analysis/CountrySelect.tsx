@@ -38,9 +38,6 @@ export function CountrySelect() {
                             name="country"
                             className="w-full bg-slate-950/70 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-eco-500 focus:border-eco-500 transition shadow-inner appearance-none pr-10"
                         >
-                            <option value="" disabled>
-                                🌍 Select your country
-                            </option>
                             {countries.map((c) => (
                                 <option key={c.value} value={c.value}>
                                     {c.flag} {c.label}
