@@ -1,8 +1,8 @@
 ## 1. Przedstawienie problemu
 
-Duże przedsiębiorstwa, zgodnie z dyrektywą CSRD, mają obowiązek raportować emisje CO₂, co stanowi wyzwanie szczególnie dla branży IT o wysokim zużyciu energii. Jednocześnie zarządzanie śladem węglowym coraz częściej wpływa na spełnianie wymogów regulacyjnych oraz zwiększają szanse na uzyskanie wsparcia finansowego z Unii Europejskiej.​
-
-## 2. Dokumentacja Danych (Data Sets)
+CarbonGenius to system do inteligentnego obrazowania trendów emisji CO₂. Pomaga dużym przedsiębiorstwom – szczególnie z branży IT – monitorować, jak zmienia się ich ślad węglowy w czasie, wskazuje momenty wzrostu oraz podpowiada, gdzie szukać redukcji zgodnych z CSRD. Raportowanie staje się dzięki temu mniej uciążliwe, a wnioski dla działów finansowych i ESG są budowane na twardych danych zamiast statycznych tabel.
+ 
+ ## 2. Dokumentacja Danych (Data Sets)
 
 Nasz system opiera swoje obliczenia na trzech kluczowych zbiorach danych, które pozwalają na kompleksową analizę cyklu życia zasobów (LCA):
 
@@ -46,13 +46,12 @@ Chcieliśmy, żeby CarbonGenius potrafił przewidywać przyszłość (np. emisj�
 
 ## 4. Podsumowanie: Odpowiedź CarbonGenius na Wyzwania Regulacyjne Uni Europejskiej
 
-Projekt **CarbonGenius** to coś więcej niż kalkulator – to strategiczna odpowiedź na palący problem rynkowy, jakim jest konieczność dostosowania się dużych przedsiębiorstw do dyrektywy **CSRD**.
-
-### Rozwiązanie Problemu Biznesowego
-Branża IT stoi przed unikalnym wyzwaniem: rosnące zapotrzebowanie na moc obliczeniową generuje ogromne zużycie energii oraz kumulację tzw. długu technologicznego w postaci sprzętu. Niesie to za sobą dużą emisję CO2, którą firmy muszą zmniejszać zgodnie z wytycznymi Uni Europejskiej. 
-
+Projekt **CarbonGenius** to radar trendów emisji CO₂, który odpowiada na palący problem rynkowy: jak wykazać, że firma naprawdę zmniejsza ślad klimatyczny i robi to świadomie.
+ 
+ ### Rozwiązanie Problemu Biznesowego
+Branża IT stoi przed unikalnym wyzwaniem: rosnące zapotrzebowanie na moc obliczeniową generuje ogromne zużycie energii oraz kumulację tzw. długu technologicznego w postaci sprzętu. Niesie to za sobą dużą emisję CO2, którą trzeba rozumieć nie tylko na poziomie rocznych słupków, lecz przede wszystkim trajektorii i odchyleń od celu.
+ 
 **CarbonGenius rozwiązuje to poprzez:**
-1.  **Agregację danych:** Automatyczne łączenie emisji z energii, floty samochodowej, produkcji sprzętu oraz usług chmurowych w jeden spójny raport.
-2.  **Optymalizację pod kątem dotacji UE:** Unia Europejska priorytetowo traktuje projekty wykazujące realną ścieżkę dekarbonizacji. Nasz moduł predykcyjny pozwala wygenerować wiarygodny scenariusz redukcji emisji na rok 2030, co stanowi **kluczowy atut we wnioskach o dofinansowanie**.
-
----
+1. **Analizę historyczną:** Pokazuje, jak zmieniał się ślad węglowy firmy na przestrzeni lat. I jaki ma trend.
+2. **Prognozowanie przyszłości:** Dzięki AI przewiduje, jak będzie wyglądać emisja w kolejnych latach, pomagając planować działania redukcyjne.
+3. **Pokazuje co można poprawić:** Identyfikuje obszary, w których emisja wzrosła i sugeruje, gdzie szukać oszczędności.

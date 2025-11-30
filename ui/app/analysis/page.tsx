@@ -98,11 +98,15 @@ export default function Page() {
     const scrollToHeader = () => {
         const el = headerRef.current;
         if (!el) return;
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        const top = el.getBoundingClientRect().top + window.scrollY - 400;
+        window.scrollTo({ top, behavior: "smooth" });
     };
 
     const scrollToSlideTop = () => {
-        sliderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        const el = sliderRef.current;
+        if (!el) return;
+        const top = el.getBoundingClientRect().top + window.scrollY - 200;
+        window.scrollTo({ top, behavior: "smooth" });
     };
 
     useEffect(() => {
