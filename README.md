@@ -1,4 +1,4 @@
-## 1. Dokumentacja Danych (Data Sets)
+## 1. Przedstawienie problemu
 
 Duże przedsiębiorstwa, zgodnie z dyrektywą CSRD, mają obowiązek raportować emisje CO₂, co stanowi wyzwanie szczególnie dla branży IT o wysokim zużyciu energii. Jednocześnie zarządzanie śladem węglowym coraz częściej wpływa na spełnianie wymogów regulacyjnych oraz zwiększają szanse na uzyskanie wsparcia finansowego z Unii Europejskiej.​
 
@@ -14,12 +14,12 @@ Fundamentalny zbiór danych makroekonomicznych dotyczący emisyjności sieci ene
 ###  B. `Hardware.csv` (Sprzęt Biurowy)
 Baza danych dotycząca śladu węglowego urządzeń końcowych (End-User Devices).
 * **Kluczowe metryki:** Emisja wbudowana (Embodied Carbon) powstała w procesie produkcji laptopów i monitorów.
-* **Źródło:** 
+* **Źródło:** Dane Dell dotyczące emisji CO2 przy produkcji laptopów - https://www.dell.com/en-us/dt/corporate/social-impact/reporting/carbon-footprint.htm
 
 ###  C. `Serwers.csv` (Infrastruktura Data Center)
 Specjalistyczny zbiór danych dla infrastruktury serwerowej.
 * **Opis:** Dane dotyczące kosztu węglowego wyprodukowania serwerów rackowych i macierzy dyskowych.
-* **Źródło:** 
+* **Źródło:** Dane z raportu "Data Centres and Data Transmission Networks - https://www.iea.org/energy-system/buildings/data-centres-and-data-transmission-networks
 
 ---
 
@@ -42,7 +42,7 @@ Chcieliśmy, żeby CarbonGenius potrafił przewidywać przyszłość (np. emisj�
 
 **Decyzja:** CarbonGenius używa domyślnie **modelu Liniowego**, bo w biznesie ważniejsza jest stabilność i przewidywalność niż eksperymenty.
 
----
+--- 
 
 ## 4. Podsumowanie: Odpowiedź CarbonGenius na Wyzwania Regulacyjne Uni Europejskiej
 
